@@ -57,11 +57,8 @@ fun AppointmentIdScreen(
             if (viewModel.isAppointmentIdValid()) {
                 keyboardController?.hide()
                 viewModel.saveAppointmentId()
-                navController.navigate(Destinations.CaptureImageScreen) {
-                    popUpTo(Destinations.Onboarding) {
-                        inclusive = true
-                    }
-                }
+                navController.popBackStack()
+                navController.navigate(Destinations.CaptureImageScreen)
             }
         }
     )
