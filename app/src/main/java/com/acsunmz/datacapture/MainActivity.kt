@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.acsunmz.datacapture.main.MainScreen
-import com.acsunmz.datacapture.ui.theme.BiometricDataCaptureTheme
+import com.acsunmz.datacapture.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            BiometricDataCaptureTheme {
+            AppTheme {
                 val navController = rememberNavController()
                 MainScreen(
                     navController = navController,
@@ -38,12 +38,4 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         text = "Hello $name!",
         modifier = modifier
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    BiometricDataCaptureTheme {
-        Greeting("Android")
-    }
 }

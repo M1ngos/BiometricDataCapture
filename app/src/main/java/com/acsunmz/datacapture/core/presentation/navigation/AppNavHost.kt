@@ -5,6 +5,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
+import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 //import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
 //import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
@@ -27,19 +29,17 @@ fun AppNavHost(
             )
         }
 
-//        composable<Destinations.AppointmentIdScreen> {
-//            AppointmentIdScreen(
-//                navController = navController
-//            )
-//        }
-//
-//        composable<Destinations.CaptureImageScreen> {
-//            CaptureImageScreen(
-//                navController = navController
-//            )
-//        }
-//
-//
+        composable<Destinations.AppointmentIdScreen> {
+            AppointmentIdScreen(
+                navController = navController
+            )
+        }
+
+        composable<Destinations.CaptureImageScreen> {
+            CaptureImageScreen(
+                navController = navController
+            )
+        }
 //        composable<Destinations.Settings> {
 //            SettingsScreen(navController = navController)
 //        }
