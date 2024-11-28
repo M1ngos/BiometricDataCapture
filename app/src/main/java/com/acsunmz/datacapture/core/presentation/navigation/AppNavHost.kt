@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.CaptureImageScreen
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 //import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
 //import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
