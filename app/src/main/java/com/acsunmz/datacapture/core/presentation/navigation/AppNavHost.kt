@@ -1,11 +1,12 @@
 package com.acsunmz.datacapture.core.presentation.navigation
 
+import SignatureScreenWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.acsunmz.datacapture.feature.biometrics.camerax.CaptureImageScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 //import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
 //import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
@@ -35,14 +36,17 @@ fun AppNavHost(
             )
         }
 
-        composable<Destinations.CaptureImageScreen> {
-            CaptureImageScreen(
+        composable<Destinations.CameraScreen> {
+            CameraScreen(
                 navController = navController
             )
         }
-//        composable<Destinations.Settings> {
-//            SettingsScreen(navController = navController)
-//        }
+
+        composable<Destinations.SignatureScreenWrapper> {
+            SignatureScreenWrapper(
+                navController = navController
+            )
+        }
 
     }
 

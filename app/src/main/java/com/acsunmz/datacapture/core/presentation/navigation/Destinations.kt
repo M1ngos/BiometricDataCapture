@@ -10,10 +10,10 @@ class Destinations {
     object AppointmentIdScreen
 
     @Serializable
-    object CaptureImageScreen
+    object CameraScreen
 
     @Serializable
-    object CaptureFingerprintScreen
+    object SignatureScreenWrapper
 
     @Serializable
     object CaptureSignatureScreen
