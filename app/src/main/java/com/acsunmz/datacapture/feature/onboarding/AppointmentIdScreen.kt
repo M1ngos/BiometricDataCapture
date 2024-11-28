@@ -33,9 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.acsunmz.datacapture.core.presentation.navigation.Destinations
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 
@@ -58,7 +56,7 @@ fun AppointmentIdScreen(
                 keyboardController?.hide()
                 viewModel.saveAppointmentId()
                 navController.popBackStack()
-                navController.navigate(Destinations.CaptureImageScreen)
+                navController.navigate(Destinations.CameraScreen)
             }
         }
     )
