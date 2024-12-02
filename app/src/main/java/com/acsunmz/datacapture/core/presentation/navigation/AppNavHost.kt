@@ -7,11 +7,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.DocumentScannerScreen
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
-//import com.acsunmz.datacapture.feature.biometrics.CaptureImageScreen
-//import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
-//import com.acsunmz.datacapture.feature.settings.SettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -23,7 +21,8 @@ fun AppNavHost(
         modifier = modifier,
         navController = navController,
 //        startDestination = Destinations.Onboarding
-        startDestination = Destinations.CameraScreen
+//        startDestination = Destinations.CameraScreen
+        startDestination = Destinations.DocumentScannerScreen
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(
@@ -50,9 +49,13 @@ fun AppNavHost(
         }
 
         composable<Destinations.DocumentScannerScreen> {
-//            DocumentScannerScreen(
-//                navController = navController
-//            )
+            DocumentScannerScreen(
+                navController = navController,
+                onDocumentScanned = { scannedUri ->
+                    // Navigate to preview or process scanned document
+                    navController.navigate("document_preview/${scannedUri}")
+                }
+            )
         }
 
     }

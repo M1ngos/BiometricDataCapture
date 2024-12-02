@@ -74,4 +74,6 @@ dependencies {
     implementation (libs.material3)
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation (libs.play.services.tasks)
+    implementation (libs.text.recognition)
+
 }
