@@ -56,7 +56,10 @@ fun AppointmentIdScreen(
                 keyboardController?.hide()
                 viewModel.saveAppointmentId()
                 navController.popBackStack()
-                navController.navigate(Destinations.CameraScreen)
+                navController.navigate(Destinations.CameraScreen) {
+                    // Pass your reference image as an argument
+                    launchSingleTop = true
+                }
             }
         }
     )

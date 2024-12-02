@@ -22,7 +22,8 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.Onboarding
+//        startDestination = Destinations.Onboarding
+        startDestination = Destinations.CameraScreen
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(
@@ -46,6 +47,12 @@ fun AppNavHost(
             SignatureScreenWrapper(
                 navController = navController
             )
+        }
+
+        composable<Destinations.DocumentScannerScreen> {
+//            DocumentScannerScreen(
+//                navController = navController
+//            )
         }
 
     }

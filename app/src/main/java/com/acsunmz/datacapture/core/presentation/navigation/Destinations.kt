@@ -16,7 +16,7 @@ class Destinations {
     object SignatureScreenWrapper
 
     @Serializable
-    object CaptureSignatureScreen
+    object DocumentScannerScreen
 
 //    @Serializable
 //    object Username
@@ -35,9 +35,6 @@ class Destinations {
 //
 //    @Serializable
 //    object AllStatistics
-//
-    @Serializable
-    object Settings
 //
 //    @Serializable
 //    data class TaskProgress(val taskId: Int)

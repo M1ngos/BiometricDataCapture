@@ -73,5 +73,5 @@ dependencies {
     implementation (libs.ui)
     implementation (libs.material3)
     implementation (libs.androidx.lifecycle.viewmodel.compose)
-
+    implementation (libs.play.services.tasks)
 }
