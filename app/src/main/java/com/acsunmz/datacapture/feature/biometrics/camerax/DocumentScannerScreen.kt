@@ -1,6 +1,8 @@
 package com.acsunmz.datacapture.feature.biometrics.camerax
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -24,12 +26,13 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.TextRecognizer
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
+
 
 @Composable
 fun DocumentScannerScreen(
@@ -40,8 +43,28 @@ fun DocumentScannerScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
 
+    var hasCameraPermission by remember { mutableStateOf(
+        ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+    )}
+
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
-    var scannedImageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // Permission Launcher
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+    }
+
+    // Request permission if not granted
+    LaunchedEffect(key1 = true) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
 
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
@@ -49,42 +72,39 @@ fun DocumentScannerScreen(
 
     val previewView = remember { PreviewView(context) }
 
-    DisposableEffect(lifecycleOwner) {
-        val cameraProvider = cameraProviderFuture.get()
-        val preview = Preview.Builder().build().also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
-        }
 
-        imageCapture = ImageCapture.Builder()
-            .setTargetResolution(android.util.Size(1280, 720))
-            .build()
+    // Only attempt to set up camera if permission is granted
+    if (hasCameraPermission) {
+        DisposableEffect(lifecycleOwner) {
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(previewView.surfaceProvider)
+            }
 
-        val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            imageCapture = ImageCapture.Builder()
+                .setTargetResolution(android.util.Size(1280, 720))
+                .build()
 
-        try {
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                cameraSelector,
-                preview,
-                imageCapture
-            )
-        } catch (exc: Exception) {
-            Log.e("DocumentScanner", "Camera binding failed", exc)
-        }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
-        onDispose {
-            cameraProvider.unbindAll()
-        }
-    }
+            try {
+                // Unbind any previous use cases
+                cameraProvider.unbindAll()
 
-    // Capture image launcher
-    val imageCaptureResultLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            scannedImageUri = it
-            onDocumentScanned(it)
+                // Bind use cases to camera
+                cameraProvider.bindToLifecycle(
+                    lifecycleOwner,
+                    cameraSelector,
+                    preview,
+                    imageCapture
+                )
+            } catch (exc: Exception) {
+                Log.e("DocumentScanner", "Camera binding failed", exc)
+            }
+
+            onDispose {
+                cameraProvider.unbindAll()
+            }
         }
     }
 
@@ -92,45 +112,42 @@ fun DocumentScannerScreen(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Camera Preview
-        AndroidView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(500.dp),
-            factory = { previewView }
-        )
+        // Show camera preview only if permission is granted
+        if (hasCameraPermission) {
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(500.dp),
+                factory = { previewView }
+            )
 
-        // Capture Button
-        Button(
-            onClick = {
-                captureImage(
-                    context,
-                    imageCapture!!,
-                    onImageCaptured = { uri ->
-                        coroutineScope.launch(Dispatchers.IO) {
-                            processDocument(
-                                context,
-                                uri,
-                                textRecognizer
-                            ) { processedUri ->
-                                scannedImageUri = processedUri
-                                onDocumentScanned(processedUri)
+            // Capture Button
+            Button(
+                onClick = {
+                    imageCapture?.let { capture ->
+                        captureImage(
+                            context,
+                            capture,
+                            onImageCaptured = { uri ->
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    processDocument(
+                                        context,
+                                        uri,
+                                        textRecognizer
+                                    ) { processedUri ->
+                                        onDocumentScanned(processedUri)
+                                    }
+                                }
                             }
-                        }
+                        )
                     }
-                )
-            },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Capture Document")
-        }
-
-        // Gallery Selection Button
-        Button(
-            onClick = { imageCaptureResultLauncher.launch("image/*") },
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text("Select from Gallery")
+                },
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text("Capture Document")
+            }
+        } else {
+            Text("Camera permission is required", modifier = Modifier.padding(16.dp))
         }
     }
 }
@@ -170,11 +187,24 @@ private fun processDocument(
 
     textRecognizer.process(inputImage)
         .addOnSuccessListener { visionText ->
-            // Process recognized text
-            val extractedText = visionText.text
-            Log.d("DocumentScanner", "Extracted Text: $extractedText")
+            // Log all extracted text
+            Log.d("DocumentScanner", "Full Extracted Text: ${visionText.text}")
 
-            // Here you can add more sophisticated document validation logic
+            // Log details of recognized text blocks
+            visionText.textBlocks.forEachIndexed { index, block ->
+                Log.d("DocumentScanner", "Text Block $index:")
+                Log.d("DocumentScanner", "Block Text: ${block.text}")
+//                Log.d("DocumentScanner", "Block Confidence: ${block.confidence}")
+//                Log.d("DocumentScanner", "Block Languages: ${block.recognizedLanguages}")
+
+                // Log lines within each block
+                block.lines.forEachIndexed { lineIndex, line ->
+                    Log.d("DocumentScanner", "  Line $lineIndex: ${line.text}")
+                    Log.d("DocumentScanner", "  Line Confidence: ${line.confidence}")
+                }
+            }
+
+            // Proceed with processing
             onProcessed(imageUri)
         }
         .addOnFailureListener { e ->

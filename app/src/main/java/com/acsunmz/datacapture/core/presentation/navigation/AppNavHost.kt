@@ -53,7 +53,7 @@ fun AppNavHost(
                 navController = navController,
                 onDocumentScanned = { scannedUri ->
                     // Navigate to preview or process scanned document
-                    navController.navigate("document_preview/${scannedUri}")
+//                    navController.navigate("document_preview/${scannedUri}")
                 }
             )
         }
