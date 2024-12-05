@@ -1,16 +1,22 @@
 package com.acsunmz.datacapture.core.presentation.navigation
 
 import SignatureScreenWrapper
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
+//import com.acsunmz.datacapture.feature.biometrics.camerax.CameraLivenessScreen
+//import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.DocumentScannerScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
 
+@RequiresApi(Build.VERSION_CODES.R)
 @Composable
 fun AppNavHost(
     completedOnboarding: Boolean,
@@ -21,8 +27,9 @@ fun AppNavHost(
         modifier = modifier,
         navController = navController,
 //        startDestination = Destinations.Onboarding
-//        startDestination = Destinations.CameraScreen
-        startDestination = Destinations.DocumentScannerScreen
+        startDestination = Destinations.CameraScreen
+//            startDestination = Destinations.LivenessDetectionScreen
+//        startDestination = Destinations.DocumentScannerScreen
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(
@@ -38,7 +45,17 @@ fun AppNavHost(
 
         composable<Destinations.CameraScreen> {
             CameraScreen(
-                navController = navController
+                navController = navController,
+            )
+        }
+
+
+        composable<Destinations.LivenessDetectionScreen> {
+            LivenessDetectionScreen(
+                onLivenessComplete = {
+                    // Navigate to next screen or perform next action
+                    navController.navigate(Destinations.LivenessDetectionScreen)
+                }
             )
         }
 

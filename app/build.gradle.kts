@@ -76,5 +76,8 @@ dependencies {
     implementation (libs.androidx.lifecycle.viewmodel.compose)
     implementation (libs.play.services.tasks)
     implementation (libs.text.recognition)
-
+    implementation (libs.kotlinx.coroutines.play.services)
+    implementation (libs.ktor.client.core)
+    implementation (libs.ktor.client.android)
+    implementation (libs.ktor.client.content.negotiation)
 }
