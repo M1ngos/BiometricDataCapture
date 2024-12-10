@@ -16,7 +16,7 @@ class Destinations {
     object SignatureScreenWrapper
 
     @Serializable
-    object DocumentScannerScreen
+    object DocumentScanner
 
     @Serializable
     object LivenessDetectionScreen

@@ -12,11 +12,14 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
+import kotlinx.coroutines.delay
 import org.json.JSONObject
 import java.io.File
 
 class CameraViewModel : ViewModel() {
     var uploadStatus by mutableStateOf<UploadStatus>(UploadStatus.Idle)
+    var shouldNavigate by mutableStateOf(false)
+
     private val httpClient = HttpClient()
 
     sealed class UploadStatus {
@@ -51,6 +54,11 @@ class CameraViewModel : ViewModel() {
                 UploadStatus.Success(message)
             } else {
                 UploadStatus.Error("Could not process face features")
+            }
+
+            if (uploadStatus is UploadStatus.Success) {
+                delay(2000)
+                shouldNavigate = true
             }
         } catch (e: Exception) {
             uploadStatus = UploadStatus.Error("Server error: ${e.message}")

@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.ui.res.painterResource
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.core.presentation.navigation.Destinations
 import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
 import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 
@@ -76,6 +77,16 @@ fun CameraScreen(
             previewView,
             imageCapture!!
         )
+    }
+
+    LaunchedEffect(viewModel.shouldNavigate) {
+        if (viewModel.shouldNavigate) {
+            navController.navigate(Destinations.DocumentScanner) {
+                popUpTo(Destinations.CameraScreen) { inclusive = true }
+            }
+            // Reset the navigation flag
+            viewModel.shouldNavigate = false
+        }
     }
 
     val message = when (val status = viewModel.uploadStatus) {
