@@ -32,50 +32,12 @@ import java.io.File
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.ui.res.painterResource
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
+import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 
-class CameraViewModel : ViewModel() {
-    var uploadStatus by mutableStateOf<UploadStatus>(UploadStatus.Idle)
-    private val httpClient = HttpClient()
-
-    sealed class UploadStatus {
-        object Idle : UploadStatus()
-        object Uploading : UploadStatus()
-        data class Success(val message: String) : UploadStatus()
-        data class Error(val message: String) : UploadStatus()
-    }
-
-    suspend fun uploadImage(imageFile: File) {
-        uploadStatus = UploadStatus.Uploading
-        try {
-            val response = httpClient.submitFormWithBinaryData(
-//                url = "https://your-fastapi-endpoint.com/upload",
-                url = "http://192.168.1.209:8000/upload",
-                formData = formData {
-                    append("file", imageFile.readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=${imageFile.name}")
-                    })
-                }
-            )
-
-            uploadStatus = if (response.status.isSuccess()) {
-                UploadStatus.Success("Upload successful")
-            } else {
-                UploadStatus.Error("Upload failed")
-            }
-        } catch (e: Exception) {
-            uploadStatus = UploadStatus.Error("Upload error: ${e.message}")
-            Log.d("Upload","${e.message}")
-        }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        httpClient.close()
-    }
-}
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
@@ -113,6 +75,24 @@ fun CameraScreen(
             lifecycleOwner,
             previewView,
             imageCapture!!
+        )
+    }
+
+    val message = when (val status = viewModel.uploadStatus) {
+        is CameraViewModel.UploadStatus.Success -> status.message
+        is CameraViewModel.UploadStatus.Error -> status.message
+        else -> null
+    }
+
+
+    message?.let {
+        Text(
+            text = it,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 
@@ -222,6 +202,37 @@ fun CameraScreen(
                         }
                     }
                 }
+                is CameraViewModel.UploadStatus.FaceAlreadyExists -> {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = YellowStatusBackground.copy(alpha = 0.9f)
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Warning,
+                                contentDescription = "Warning",
+                                tint = YellowStatusContent
+                            )
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(
+                                status.message,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = YellowStatusContent
+                            )
+                        }
+                    }
+                }
+
                 else -> {} // Idle state
             }
 
