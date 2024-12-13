@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.biometrics.camerax
+package com.acsunmz.datacapture.feature.biometrics.camerax.capture
 
 import android.Manifest
 import android.content.Context
@@ -18,15 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import io.ktor.client.*
-import io.ktor.client.request.forms.*
-import io.ktor.http.*
 import kotlinx.coroutines.launch
 import java.io.File
 import androidx.compose.material.icons.Icons
@@ -271,9 +266,10 @@ fun CameraScreen(
                                         }
 
                                         override fun onError(exc: ImageCaptureException) {
-                                            viewModel.uploadStatus = CameraViewModel.UploadStatus.Error(
-                                                "Failed to capture image: ${exc.message}"
-                                            )
+                                            viewModel.uploadStatus =
+                                                CameraViewModel.UploadStatus.Error(
+                                                    "Failed to capture image: ${exc.message}"
+                                                )
                                         }
                                     }
                                 )

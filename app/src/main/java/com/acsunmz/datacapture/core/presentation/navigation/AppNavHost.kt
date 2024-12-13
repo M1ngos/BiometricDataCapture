@@ -8,7 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.IdScannerScreen
 //import com.acsunmz.datacapture.feature.biometrics.camerax.CameraLivenessScreen
 //import com.acsunmz.datacapture.feature.biometrics.camerax.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
@@ -73,6 +74,13 @@ fun AppNavHost(
 //                        navController.navigate("document_preview/${scannedUri}")
                     navController.navigate(Destinations.SignatureScreenWrapper)
                 }
+            )
+        }
+
+        composable<Destinations.IdScannerScreen> {
+            IdScannerScreen(
+                onStart  = {},
+                onCancel = {}
             )
         }
 

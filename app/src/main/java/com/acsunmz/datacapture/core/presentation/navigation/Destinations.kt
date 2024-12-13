@@ -20,6 +20,12 @@ class Destinations {
 
     @Serializable
     object LivenessDetectionScreen
+
+    @Serializable
+    object IdScannerScreen
+
+
+
 //
 //    @Serializable
 //    data class AllTasks(val type: String)

@@ -1,5 +1,6 @@
 package com.acsunmz.datacapture.main
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -11,6 +12,7 @@ import com.acsunmz.datacapture.core.presentation.navigation.AppNavHost
 import androidx.navigation.NavHostController
 
 
+@SuppressLint("NewApi")
 @Composable
 fun MainScreen(
     navController: NavHostController,
