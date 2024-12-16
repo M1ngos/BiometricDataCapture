@@ -2,6 +2,7 @@ package com.acsunmz.datacapture.core.presentation.navigation
 
 import SignatureScreenWrapper
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -100,12 +101,24 @@ fun AppNavHost(
             val documentTypeTitle = backStackEntry.arguments?.getString("documentTypeTitle")
             val documentType = getDocumentTypeByTitle(documentTypeTitle)
             if (documentType != null) {
-                ScannerScreen(documentType = documentType, onScanComplete = { extractedData ->
-                    // Handle extracted data
-                })
+                ScannerScreen(
+                    documentType = documentType,
+                    onDocumentProcessed = { result ->
+                        result.forEach { (key, value) ->
+                            println("$key: $value")
+                            Log.d("scanner-results","${key}:${value}")
+                        }
+                    }
+
+//                            onDocumentProcessed = { result ->
+//                        // Navigate to the next screen with the scanned document details
+//                        navController.navigate("${Destinations.DocumentDetailsScreen}") {
+//                            // Optional: clear the back stack so user can't go back to scanner
+//                            popUpTo(Destinations.ScannerScreen) { inclusive = true }
+//                        }
+                )
             } else {
-                // Handle the case where the document type is not found
-                // e.g., navigate back, show an error, etc.
+                navController.popBackStack()
             }
         }
     }
@@ -113,7 +126,7 @@ fun AppNavHost(
 
 fun getDocumentTypeByTitle(title: String?): DocumentType? {
     return when (title) {
-        DocumentType.IdCard.title -> DocumentType.IdCard
+        DocumentType.MozambicanID.title -> DocumentType.MozambicanID
         DocumentType.Passport.title -> DocumentType.Passport
         DocumentType.ElectionCard.title -> DocumentType.ElectionCard
         else -> null

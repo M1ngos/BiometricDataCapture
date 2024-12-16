@@ -34,7 +34,7 @@ fun ChooserScreen(
     onDocumentTypeSelected: (DocumentType) -> Unit
 ) {
     val documentTypes = listOf(
-        DocumentType.IdCard,
+        DocumentType.MozambicanID,
         DocumentType.Passport,
         DocumentType.ElectionCard
     )
@@ -89,7 +89,7 @@ fun ChooserScreen(
 @Composable
 fun ChooserScreenPreview(){
     val documentTypes = listOf(
-        DocumentType.IdCard,
+        DocumentType.MozambicanID,
         DocumentType.Passport,
         DocumentType.ElectionCard
     )
