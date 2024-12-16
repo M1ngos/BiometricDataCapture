@@ -22,26 +22,11 @@ class Destinations {
     object LivenessDetectionScreen
 
     @Serializable
-    object IdScannerScreen
+    object ScannerScreen
 
+    @Serializable
+    object ConfirmationScreen
 
-
-//
-//    @Serializable
-//    data class AllTasks(val type: String)
-//
-//    @Serializable
-//    data class AddTask(val taskId: Int = -1)
-//
-//    @Serializable
-//    object Calendar
-//
-//    @Serializable
-//    object Statistics
-//
-//    @Serializable
-//    object AllStatistics
-//
-//    @Serializable
-//    data class TaskProgress(val taskId: Int)
+    @Serializable
+    object ChooserScreen
 }

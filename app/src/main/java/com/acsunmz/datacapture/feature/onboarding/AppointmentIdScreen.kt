@@ -32,7 +32,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.acsunmz.datacapture.core.presentation.navigation.Destinations
 import kotlinx.coroutines.delay
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -40,7 +39,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 @Composable
 fun AppointmentIdScreen(
     navController: NavController,
-    viewModel: AppointmentIdViewModel = viewModel()
+    viewModel: AppointmentIdViewModel = viewModel(),
+    onContinue: () -> Unit
 ) {
     val appointmentId by viewModel.appointmentId.collectAsState()
     val isError by viewModel.isError.collectAsState()
@@ -55,11 +55,7 @@ fun AppointmentIdScreen(
             if (viewModel.isAppointmentIdValid()) {
                 keyboardController?.hide()
                 viewModel.saveAppointmentId()
-                navController.popBackStack()
-                navController.navigate(Destinations.CameraScreen) {
-                    // Pass your reference image as an argument
-                    launchSingleTop = true
-                }
+                onContinue()
             }
         }
     )

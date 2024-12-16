@@ -39,7 +39,7 @@ import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 @Composable
 fun CameraScreen(
     viewModel: CameraViewModel = viewModel(),
-    navController: NavHostController
+    navigate: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -76,9 +76,7 @@ fun CameraScreen(
 
     LaunchedEffect(viewModel.shouldNavigate) {
         if (viewModel.shouldNavigate) {
-            navController.navigate(Destinations.DocumentScanner) {
-                popUpTo(Destinations.CameraScreen) { inclusive = true }
-            }
+            navigate()
             // Reset the navigation flag
             viewModel.shouldNavigate = false
         }

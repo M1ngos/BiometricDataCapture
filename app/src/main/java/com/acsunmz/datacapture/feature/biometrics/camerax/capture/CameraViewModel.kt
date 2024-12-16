@@ -95,7 +95,7 @@ class CameraViewModel : ViewModel() {
 
         // Start new timer
         statusDismissJob = viewModelScope.launch {
-            delay(3000)
+            delay(5000)
             uploadStatus = UploadStatus.Idle
         }
     }
