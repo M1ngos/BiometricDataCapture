@@ -1,5 +1,6 @@
 package com.acsunmz.datacapture.core.presentation.navigation
 
+import SignatureScreen
 import SignatureScreenWrapper
 import android.os.Build
 import android.util.Log
@@ -8,9 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.acsunmz.datacapture.MainActivity
+import com.acsunmz.datacapture.core.presentation.navigation.screens.SendCaptureDataScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ChooserScreen
@@ -20,6 +24,7 @@ import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerScreen
 import com.acsunmz.datacapture.feature.docscanner.DocumentScanner
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
+import kotlin.system.exitProcess
 
 @RequiresApi(Build.VERSION_CODES.R)
 @Composable
@@ -31,7 +36,7 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.ChooserScreen
+        startDestination = Destinations.SendCaptureDataScreen
     ) {
 
         composable<Destinations.Onboarding> {
@@ -55,13 +60,12 @@ fun AppNavHost(
         composable<Destinations.CameraScreen> {
             CameraScreen(
                 navigate = {
-                    navController.navigate(Destinations.DocumentScanner) {
+                    navController.navigate(Destinations.SignatureScreenWrapper) {
                         popUpTo(Destinations.CameraScreen) { inclusive = true }
                     }
                 }
             )
         }
-
 
         composable<Destinations.LivenessDetectionScreen> {
             LivenessDetectionScreen(
@@ -121,6 +125,18 @@ fun AppNavHost(
                 navController.popBackStack()
             }
         }
+
+        composable<Destinations.SendCaptureDataScreen> {
+            SendCaptureDataScreen(
+                onQuit = {
+                    val activity = MainActivity()
+                    activity.finish()
+                    exitProcess(0)
+                }
+            )
+        }
+
+
     }
 }
 

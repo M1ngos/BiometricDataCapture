@@ -74,9 +74,9 @@ fun SignatureScreen(
             Button(
                 onClick = {
                     scope.launch {
-                        // Save signature as bitmap
                         val bitmap = createSignatureBitmap(points)
                         val file = saveSignatureToFile(context, bitmap)
+
                         onSignatureSaved(file)
                     }
                 },
@@ -139,9 +139,32 @@ fun SignatureCanvas(
 }
 
 private fun createSignatureBitmap(points: List<PathPoint>): Bitmap {
-    // Create bitmap and draw signature
-    val bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+    if (points.isEmpty()) {
+        return Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888)
+    }
+
+    // Find the bounds of the signature
+    val minX = points.minOf { it.x }
+    val minY = points.minOf { it.y }
+    val maxX = points.maxOf { it.x }
+    val maxY = points.maxOf { it.y }
+
+    // Add padding
+    val padding = 20f
+    val width = (maxX - minX + 2 * padding).toInt()
+    val height = (maxY - minY + 2 * padding).toInt()
+
+    // Create bitmap with actual signature dimensions
+    val bitmap = Bitmap.createBitmap(
+        width.coerceAtLeast(100),
+        height.coerceAtLeast(100),
+        Bitmap.Config.ARGB_8888
+    )
+
     val canvas = android.graphics.Canvas(bitmap)
+
+    // Fill with white background
+    canvas.drawColor(android.graphics.Color.WHITE)
 
     val paint = android.graphics.Paint().apply {
         color = android.graphics.Color.BLACK
@@ -153,11 +176,16 @@ private fun createSignatureBitmap(points: List<PathPoint>): Bitmap {
     }
 
     val path = android.graphics.Path()
+
+    // Translate points to fit within the bitmap with padding
     points.forEach { point ->
+        val x = point.x - minX + padding
+        val y = point.y - minY + padding
+
         if (point.isStartPoint) {
-            path.moveTo(point.x, point.y)
+            path.moveTo(x, y)
         } else {
-            path.lineTo(point.x, point.y)
+            path.lineTo(x, y)
         }
     }
 
@@ -166,7 +194,7 @@ private fun createSignatureBitmap(points: List<PathPoint>): Bitmap {
 }
 
 private fun saveSignatureToFile(context: Context, bitmap: Bitmap): File {
-    val file = File(context.cacheDir, "signature_${System.currentTimeMillis()}.png")
+    val file = File(context.cacheDir, "signature.png")
     FileOutputStream(file).use { out ->
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
     }

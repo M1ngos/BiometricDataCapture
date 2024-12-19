@@ -29,4 +29,7 @@ class Destinations {
 
     @Serializable
     object ChooserScreen
+
+    @Serializable
+    object SendCaptureDataScreen
 }
