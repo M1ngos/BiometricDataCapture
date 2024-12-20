@@ -82,4 +82,5 @@ dependencies {
     implementation (libs.ktor.client.content.negotiation)
     implementation(libs.play.services.mlkit.document.scanner)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.material.icons.extended)
 }
