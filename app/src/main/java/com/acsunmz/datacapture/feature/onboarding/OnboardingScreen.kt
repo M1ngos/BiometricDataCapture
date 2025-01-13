@@ -71,8 +71,9 @@ fun OnboardingScreen(
             }
         },
         onClickGetStarted = {
-            navController.popBackStack()
-            navController.navigate(Destinations.AppointmentIdScreen)
+            navController.navigate(Destinations.AppointmentIdScreen) {
+                launchSingleTop = true
+            }
         },
     )
 }

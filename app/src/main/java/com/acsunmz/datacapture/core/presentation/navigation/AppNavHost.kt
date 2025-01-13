@@ -4,6 +4,7 @@ import SignatureScreen
 import SignatureScreenWrapper
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,7 +37,7 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.SendCaptureDataScreen
+        startDestination = Destinations.Onboarding
     ) {
 
         composable<Destinations.Onboarding> {
@@ -49,7 +50,6 @@ fun AppNavHost(
             AppointmentIdScreen(
                 navController = navController,
                 onContinue = {
-                    navController.popBackStack()
                     navController.navigate(Destinations.CameraScreen) {
                         launchSingleTop = true
                     }
@@ -61,8 +61,11 @@ fun AppNavHost(
             CameraScreen(
                 navigate = {
                     navController.navigate(Destinations.SignatureScreenWrapper) {
-                        popUpTo(Destinations.CameraScreen) { inclusive = true }
+                        launchSingleTop = true
                     }
+//                    {
+//                        popUpTo(Destinations.CameraScreen) { inclusive = true }
+//                    }
                 }
             )
         }

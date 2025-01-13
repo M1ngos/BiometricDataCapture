@@ -1,5 +1,6 @@
 package com.acsunmz.datacapture.feature.onboarding
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +46,10 @@ fun AppointmentIdScreen(
     val appointmentId by viewModel.appointmentId.collectAsState()
     val isError by viewModel.isError.collectAsState()
     val keyboardController = LocalSoftwareKeyboardController.current
+
+    BackHandler {
+        navController.popBackStack() // Navigate back to OnboardingScreen
+    }
 
     AppointmentIdScreenContent(
         appointmentId = appointmentId,
