@@ -138,6 +138,7 @@ fun CameraScreen(
                     .fillMaxWidth()
             ) {
                 var previewUseCase by remember { mutableStateOf<Preview?>(null) }
+                var imageCaptureUseCase by remember { mutableStateOf<ImageCapture?>(null) }
                 AndroidView(
                     factory = { context ->
                         val previewView = PreviewView(context).apply {
@@ -157,9 +158,13 @@ fun CameraScreen(
                         )
 
                         cameraProviderFuture.addListener({
-                            val cameraProvider = cameraProviderFuture.get()
+                            cameraProvider = cameraProviderFuture.get()
 
                             previewUseCase = Preview.Builder().build()
+                            imageCaptureUseCase =
+                                ImageCapture.Builder()  // Initialize ImageCapture here
+                                    .setTargetAspectRatio(AspectRatio.RATIO_16_9)
+                                    .build()
 
                             val imageAnalyzer = ImageAnalysis.Builder()
                                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -235,17 +240,19 @@ fun CameraScreen(
                                 }
 
                             try {
-                                cameraProvider.unbindAll()
-                                cameraProvider.bindToLifecycle(
+                                cameraProvider?.unbindAll()
+                                cameraProvider?.bindToLifecycle(
                                     lifecycleOwner,
                                     cameraSelector,
                                     previewUseCase,
-                                    imageAnalyzer
+                                    imageAnalyzer,
+                                    imageCaptureUseCase
                                 )
 
                                 previewUseCase?.setSurfaceProvider(previewView.surfaceProvider)
                             } catch (e: Exception) {
                                 e.printStackTrace()
+                                Log.e("CameraScreen", "Camera initialization failed", e)
                             }
                         }, ContextCompat.getMainExecutor(context))
 
@@ -260,7 +267,7 @@ fun CameraScreen(
                         .align(Alignment.Center)
                         .padding(16.dp),
                     style = MaterialTheme.typography.titleMedium,
-//                    color = MaterialTheme.colorScheme.onPrimary
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 )
 
                 // Overlay content
@@ -282,9 +289,12 @@ fun CameraScreen(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Bottom
                 ) {
-                    if (!liveness_passed) {
+                    if (
+                        !liveness_passed && viewModel.uploadStatus !is CameraViewModel.UploadStatus.Uploading
+                    ) {
                         Text(
                             text = "Status de verificação:",
+                            color = MaterialTheme.colorScheme.secondaryContainer,
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -308,38 +318,26 @@ fun CameraScreen(
                     FilledTonalButton(
                         enabled = liveness_passed,
                         onClick = {
-                            Log.d("uploadImage", "debug2")
-
+                            Log.d("uploadImage", "Starting capture")
                             coroutineScope.launch {
-                                cameraProvider?.let {
-                                    val imageCapture = ImageCapture.Builder()
-                                        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-                                        .build()
-
-                                    cameraProvider!!.bindToLifecycle(
-                                        context as LifecycleOwner,
-                                        cameraSelector,
-                                        imageCapture
-                                    )
-
+                                try {
                                     val file = File(context.cacheDir, "captured_image.jpg")
-                                    Log.d("uploadImage", "debug1")
-
                                     val outputOptions =
                                         ImageCapture.OutputFileOptions.Builder(file).build()
 
-                                    imageCapture.takePicture(
+                                    imageCaptureUseCase?.takePicture(
                                         outputOptions,
                                         ContextCompat.getMainExecutor(context),
                                         object : ImageCapture.OnImageSavedCallback {
                                             override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                                Log.d("uploadImage", "Image captured successfully")
                                                 coroutineScope.launch {
                                                     viewModel.uploadImage(file)
-                                                    Log.d("uploadImage", "debug0")
                                                 }
                                             }
 
                                             override fun onError(exc: ImageCaptureException) {
+                                                Log.e("uploadImage", "Failed to capture image", exc)
                                                 viewModel.uploadStatus =
                                                     CameraViewModel.UploadStatus.Error(
                                                         "Failed to capture image: ${exc.message}"
@@ -347,9 +345,13 @@ fun CameraScreen(
                                             }
                                         }
                                     )
+                                } catch (e: Exception) {
+                                    Log.e("uploadImage", "Error during image capture", e)
+                                    viewModel.uploadStatus = CameraViewModel.UploadStatus.Error(
+                                        "Error during image capture: ${e.message}"
+                                    )
                                 }
                             }
-
                         },
                         modifier = Modifier.size(80.dp),
                         shape = CircleShape,
@@ -370,7 +372,6 @@ fun CameraScreen(
         }
     }
 }
-
 
 private fun getInstructions(
     faceDetected: Boolean,
@@ -397,22 +398,31 @@ private fun StatusRow(
     ) {
         Icon(
             imageVector = if (status) {
-                androidx.compose.material.icons.Icons.Default.CheckCircle
+                Icons.Default.CheckCircle
             } else {
-                androidx.compose.material.icons.Icons.Default.Error
+                Icons.Default.Error
             },
             contentDescription = null,
             tint = if (status) {
                 MaterialTheme.colorScheme.primary
             } else {
-                MaterialTheme.colorScheme.outline
+                MaterialTheme.colorScheme.errorContainer
             }
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text = label)
+        Text(
+            text = label,
+            color = MaterialTheme.colorScheme.secondaryContainer
+        )
     }
 }
 
+@androidx.compose.ui.tooling.preview.Preview
+@Composable
+fun StatusRowPreview(
+) {
+    StatusRow("Rosto detectado", false)
+}
 
 @Composable
 fun DisplayStatus(viewModel: CameraViewModel) {
