@@ -26,13 +26,13 @@ sealed class DocumentType(
         R.drawable.ic_id_card,
         listOf(
             // Front side fields
-//            DocumentField(
-//                name = "Nº:",
-//                regex = "\\d{13}[A-Z]",
-//                required = true,
-//                searchHint = "Look for 13 digits followed by a letter",
-//                side = CardSide.Front
-//            ),
+            DocumentField(
+                name = "Nº:",
+                regex = "\\d{13}[A-Z]",
+                required = true,
+                searchHint = "Look for 13 digits followed by a letter",
+                side = CardSide.Front
+            ),
             DocumentField(
                 name = "Nome / Name",
                 regex = "[A-ZÁÉÍÓÚÇÑ\\s]{2,50}",
@@ -57,7 +57,7 @@ sealed class DocumentType(
             DocumentField(
                 name = "Altura / Height",
                 regex = "\\d{1,}[.,]\\d{2}",
-                required = false,
+                required = true,
                 searchHint = "Look for height in meters",
                 side = CardSide.Front
             ),

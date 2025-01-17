@@ -1,9 +1,7 @@
 package com.acsunmz.datacapture.feature.biometrics.camerax.capture
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.*
@@ -25,7 +23,6 @@ import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import java.io.File
 import androidx.compose.material.icons.Icons
@@ -33,19 +30,14 @@ import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.LifecycleOwner
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.core.presentation.navigation.Destinations
 import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
 import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
-import java.text.SimpleDateFormat
-import java.util.Locale
 import java.util.concurrent.Executors
 
 
@@ -70,9 +62,9 @@ fun CameraScreen(
     var eyesOpen by remember { mutableStateOf(false) }
     var isBlinking by remember { mutableStateOf(false) }
     var hasMoved by remember { mutableStateOf(false) }
-    var liveness_passed by remember { mutableStateOf(false) }
+    var livenessPassed by remember { mutableStateOf(false) }
 
-    liveness_passed = faceDetected && eyesOpen && isBlinking && hasMoved
+    livenessPassed = faceDetected && eyesOpen && isBlinking && hasMoved
 
 
     // Anti-spoofing variables
@@ -103,7 +95,7 @@ fun CameraScreen(
     }
 
     LaunchedEffect(isBlinking && faceDetected && eyesOpen && hasMoved) {
-        liveness_passed = true
+        livenessPassed = true
     }
     LaunchedEffect(viewModel.shouldNavigate) {
         if (viewModel.shouldNavigate) {
@@ -261,14 +253,19 @@ fun CameraScreen(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                Text(
-                    text = getInstructions(faceDetected, hasMoved, isBlinking, eyesOpen),
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                )
+
+                if (
+                    !livenessPassed && viewModel.uploadStatus !is CameraViewModel.UploadStatus.Uploading
+                ) {
+                    Text(
+                        text = getInstructions(faceDetected, hasMoved, isBlinking, eyesOpen),
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondaryContainer
+                    )
+                }
 
                 // Overlay content
                 Box(
@@ -290,7 +287,7 @@ fun CameraScreen(
                     verticalArrangement = Arrangement.Bottom
                 ) {
                     if (
-                        !liveness_passed && viewModel.uploadStatus !is CameraViewModel.UploadStatus.Uploading
+                        !livenessPassed && viewModel.uploadStatus !is CameraViewModel.UploadStatus.Uploading
                     ) {
                         Text(
                             text = "Status de verificação:",
@@ -316,7 +313,7 @@ fun CameraScreen(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     FilledTonalButton(
-                        enabled = liveness_passed,
+                        enabled = livenessPassed,
                         onClick = {
                             Log.d("uploadImage", "Starting capture")
                             coroutineScope.launch {

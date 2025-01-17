@@ -1,6 +1,7 @@
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.acsunmz.datacapture.core.presentation.navigation.Destinations
 
 @Composable
 fun SignatureScreenWrapper(
@@ -10,6 +11,7 @@ fun SignatureScreenWrapper(
     SignatureScreen(
         onSignatureSaved = { file ->
             viewModel.onSignatureSaved(file)
+            navController.navigate(Destinations.ChooserScreen)
         }
     )
 }

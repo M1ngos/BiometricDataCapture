@@ -41,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
 import com.acsunmz.datacapture.core.network.SendCaptureDataViewModel
+import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -59,7 +61,6 @@ fun SendCaptureDataScreen(
     val photoFile = File(context.cacheDir, "captured_image.jpg")
     val signatureFile = File(context.cacheDir, "signature.png")
 
-
     LaunchedEffect(Unit) {
         isPhotoExist = photoFile.exists()
         isSignatureExist = signatureFile.exists()
@@ -72,6 +73,7 @@ fun SendCaptureDataScreen(
 
     LaunchedEffect(viewModel.terminate) {
         if(viewModel.terminate && result ) {
+            delay(2000)
             onQuit()
         }
     }

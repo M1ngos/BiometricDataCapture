@@ -1,6 +1,5 @@
 package com.acsunmz.datacapture.core.presentation.navigation
 
-import SignatureScreen
 import SignatureScreenWrapper
 import android.os.Build
 import android.util.Log
@@ -10,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -37,9 +35,8 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.Onboarding
+        startDestination = Destinations.ChooserScreen
     ) {
-
         composable<Destinations.Onboarding> {
             OnboardingScreen(
                 navController = navController,
@@ -61,11 +58,8 @@ fun AppNavHost(
             CameraScreen(
                 navigate = {
                     navController.navigate(Destinations.SignatureScreenWrapper) {
-                        launchSingleTop = true
+                        popUpTo(Destinations.CameraScreen) { inclusive = true }
                     }
-//                    {
-//                        popUpTo(Destinations.CameraScreen) { inclusive = true }
-//                    }
                 }
             )
         }
@@ -85,10 +79,10 @@ fun AppNavHost(
         }
 
         composable<Destinations.DocumentScanner> {
-            DocumentScanner (
+            DocumentScanner(
                 navController = navController,
                 onDocumentScanned = { scannedUri ->
-                    navController.navigate(Destinations.SignatureScreenWrapper)
+                    navController.navigate(Destinations.SendCaptureDataScreen)
                 }
             )
         }
@@ -115,14 +109,8 @@ fun AppNavHost(
                             println("$key: $value")
                             Log.d("scanner-results","${key}:${value}")
                         }
+                        navController.navigate(Destinations.SendCaptureDataScreen)
                     }
-
-//                            onDocumentProcessed = { result ->
-//                        // Navigate to the next screen with the scanned document details
-//                        navController.navigate("${Destinations.DocumentDetailsScreen}") {
-//                            // Optional: clear the back stack so user can't go back to scanner
-//                            popUpTo(Destinations.ScannerScreen) { inclusive = true }
-//                        }
                 )
             } else {
                 navController.popBackStack()
@@ -138,8 +126,6 @@ fun AppNavHost(
                 }
             )
         }
-
-
     }
 }
 
