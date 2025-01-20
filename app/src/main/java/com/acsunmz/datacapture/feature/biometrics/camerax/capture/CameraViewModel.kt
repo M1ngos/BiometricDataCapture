@@ -48,7 +48,7 @@ class CameraViewModel : ViewModel() {
         try {
             val response = httpClient.submitFormWithBinaryData(
 //                url = "https://your-fastapi-endpoint.com/upload",
-                url = "http://192.168.1.144:8000/upload",
+                url = "http://192.168.1.209:8000/upload",
                 formData = formData {
                     append("file", imageFile.readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")

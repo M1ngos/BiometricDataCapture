@@ -25,6 +25,9 @@ class Destinations {
     object ScannerScreen
 
     @Serializable
+    object IdScanner
+
+    @Serializable
     object ConfirmationScreen
 
     @Serializable

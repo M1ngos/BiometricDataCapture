@@ -1,5 +1,6 @@
 package com.acsunmz.datacapture.core.presentation.navigation
 
+import IdScanner
 import SignatureScreenWrapper
 import android.os.Build
 import android.util.Log
@@ -35,7 +36,7 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.ChooserScreen
+        startDestination = Destinations.IdScanner
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(
@@ -64,6 +65,23 @@ fun AppNavHost(
             )
         }
 
+        composable<Destinations.ChooserScreen> {
+            ChooserScreen(
+                onDocumentTypeSelected = { documentType ->
+                    navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
+                }
+            )
+        }
+
+        composable<Destinations.IdScanner> {
+            IdScanner (
+             onScanComplete = {
+                 navController.navigate(Destinations.CameraScreen)
+             }
+            )
+        }
+
+
         composable<Destinations.LivenessDetectionScreen> {
             LivenessDetectionScreen(
                 onLivenessComplete = {
@@ -83,14 +101,6 @@ fun AppNavHost(
                 navController = navController,
                 onDocumentScanned = { scannedUri ->
                     navController.navigate(Destinations.SendCaptureDataScreen)
-                }
-            )
-        }
-
-        composable<Destinations.ChooserScreen> {
-            ChooserScreen(
-                onDocumentTypeSelected = { documentType ->
-                    navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
                 }
             )
         }

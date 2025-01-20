@@ -1,231 +1,299 @@
-//import android.Manifest
-//import androidx.camera.core.*
-//import androidx.camera.lifecycle.ProcessCameraProvider
-//import androidx.camera.view.PreviewView
-//import androidx.compose.foundation.border
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.*
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.graphics.Color
-//import androidx.compose.ui.platform.LocalContext
-//import androidx.compose.ui.platform.LocalLifecycleOwner
-//import androidx.compose.ui.unit.dp
-//import androidx.compose.ui.viewinterop.AndroidView
-//import androidx.core.content.ContextCompat
-//import com.chaquo.python.Python
-//import com.chaquo.python.android.AndroidPlatform
-//import java.util.concurrent.Executors
-//import android.graphics.Bitmap
-//import android.graphics.BitmapFactory
-//import androidx.activity.compose.rememberLauncherForActivityResult
-//import androidx.activity.result.contract.ActivityResultContracts
-//import androidx.annotation.OptIn
-//import androidx.camera.core.ImageCapture.OnImageCapturedCallback
-//import androidx.camera.core.ImageProxy
-//import java.nio.ByteBuffer
-//import kotlinx.coroutines.launch
-//import kotlinx.coroutines.Dispatchers
-//import kotlinx.coroutines.withContext
-//import java.io.ByteArrayOutputStream
-//
-//data class ExtractedData(
-//    val success: Boolean,
-//    val data: Map<String, String>,
-//    val error: String?
-//)
-//
-//@Suppress("UNCHECKED_CAST")
-//private fun convertPythonResult(result: Any): ExtractedData {
-//    val resultMap = result as java.util.HashMap<String, Any>
-//    return ExtractedData(
-//        success = resultMap["success"] as Boolean,
-//        data = (resultMap["data"] as java.util.HashMap<String, String>).toMap(),
-//        error = resultMap["error"] as? String
-//    )
-//}
-//
-//
-//@Composable
-//fun IdScanner(
-//    onDataExtracted: (ExtractedData) -> Unit,
-//    modifier: Modifier = Modifier
-//) {
-//    val context = LocalContext.current
-//    val lifecycleOwner = LocalLifecycleOwner.current
-//    val scope = rememberCoroutineScope()
-//
-//    var extractedData by remember { mutableStateOf<ExtractedData?>(null) }
-//    var isProcessing by remember { mutableStateOf(false) }
-//    var errorMessage by remember { mutableStateOf<String?>(null) }
-//
-//    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-//    val imageCapture = remember {
-//        ImageCapture.Builder()
-//            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-//            .build()
-//    }
-//
-//    val permissionLauncher = rememberLauncherForActivityResult(
-//        ActivityResultContracts.RequestPermission()
-//    ) { isGranted ->
-//        if (!isGranted) {
-//            // Handle permission denial
-//        }
-//    }
-//
-//    LaunchedEffect(Unit) {
-//        permissionLauncher.launch(Manifest.permission.CAMERA)
-//    }
-//
-//    LaunchedEffect(Unit) {
-//        if (!Python.isStarted()) {
-//            Python.start(AndroidPlatform(context))
-//        }
-//    }
-//
-//    Column(
-//        modifier = modifier.fillMaxSize(),
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .weight(1f)
-//                .fillMaxWidth()
-//        ) {
-//            AndroidView(
-//                factory = { context ->
-//                    PreviewView(context).apply {
-//                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-//                        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-//
-//                        cameraProviderFuture.addListener({
-//                            val cameraProvider = cameraProviderFuture.get()
-//                            val preview = Preview.Builder().build()
-//                            preview.setSurfaceProvider(this.surfaceProvider)
-//                            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-//
-//                            try {
-//                                cameraProvider.unbindAll()
-//                                cameraProvider.bindToLifecycle(
-//                                    lifecycleOwner,
-//                                    cameraSelector,
-//                                    preview,
-//                                    imageCapture
-//                                )
-//                            } catch (e: Exception) {
-//                                e.printStackTrace()
-//                            }
-//                        }, ContextCompat.getMainExecutor(context))
-//                    }
-//                },
-//                modifier = Modifier.fillMaxSize()
-//            )
-//
-//            Box(
-//                modifier = Modifier
-//                    .size(300.dp, 200.dp)
-//                    .align(Alignment.Center)
-//                    .border(2.dp, Color.White)
-//            )
-//        }
-//
-//        Button(
-//            onClick = {
-//                if (!isProcessing) {
-//                    isProcessing = true
-//                    errorMessage = null
-//
-//                    imageCapture.takePicture(
-//                        cameraExecutor,
-//                        object : OnImageCapturedCallback() {
-//                            override fun onCaptureSuccess(image: ImageProxy) {
-//                                scope.launch {
-//                                    try {
-//                                        val bitmap = image.toBitmap()
-//                                        val result = processImage(bitmap)
-//                                        onDataExtracted(result)
-//                                    } catch (e: Exception) {
-//                                        onDataExtracted(
-//                                            ExtractedData(
-//                                                success = false,
-//                                                data = emptyMap(),
-//                                                error = e.message
-//                                            )
-//                                        )
-//                                    } finally {
-//                                        isProcessing = false
-//                                        image.close()
-//                                    }
-//                                }
-//                            }
-//
-//                            override fun onError(exception: ImageCaptureException) {
-//                                onDataExtracted(
-//                                    ExtractedData(
-//                                        success = false,
-//                                        data = emptyMap(),
-//                                        error = exception.message
-//                                    )
-//                                )
-//                                isProcessing = false
-//                            }
-//                        }
-//                    )
-//                }
-//            },
-//            modifier = Modifier.padding(16.dp),
-//            enabled = !isProcessing
-//        ) {
-//            Text(if (isProcessing) "Processing..." else "Capture ID")
-//        }
-//
-//        errorMessage?.let {
-//            Text(
-//                text = it,
-//                color = MaterialTheme.colorScheme.error,
-//                modifier = Modifier.padding(16.dp)
-//            )
-//        }
-//    }
-//
-//    DisposableEffect(Unit) {
-//        onDispose {
-//            cameraExecutor.shutdown()
-//        }
-//    }
-//}
-//
-//private suspend fun processImage(bitmap: Bitmap): ExtractedData {
-//    return withContext(Dispatchers.IO) {
-//        try {
-//            val python = Python.getInstance()
-//            val extractorModule = python.getModule("id_data_extractor")
-//            val extractor = extractorModule.callAttr("IDDataExtractor")
-////
-//
-//            val stream = ByteArrayOutputStream()
-//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-//            val byteArray = stream.toByteArray()
-//
-//            val result = extractor.callAttr("extract_data", byteArray)
-//            convertPythonResult(result.toJava(Any::class.java))
-//        } catch (e: Exception) {
-//            ExtractedData(
-//                success = false,
-//                data = emptyMap(),
-//                error = e.message
-//            )
-//        }
-//    }
-//}
-//
-//// Extension function to convert ImageProxy to Bitmap
-//@OptIn(ExperimentalGetImage::class)
-//private fun ImageProxy.toBitmap(): Bitmap {
-//    val buffer: ByteBuffer = image?.planes?.get(0)?.buffer ?: throw Exception("Failed to get image buffer")
-//    val bytes = ByteArray(buffer.remaining())
-//    buffer.get(bytes)
-//    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-//}
+import android.os.Build
+import android.Manifest
+import android.content.pm.PackageManager
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.acsunmz.datacapture.R
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.android.Android
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.post
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.util.InternalAPI
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.File
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
+import io.ktor.client.request.*
+import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.serialization.kotlinx.json.json
+
+@OptIn(ExperimentalGetImage::class)
+@RequiresApi(Build.VERSION_CODES.R)
+@Composable
+fun IdScanner(
+    viewModel: IdScannerViewModel = viewModel(),
+    onScanComplete: () -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    // State for tracking which side of ID is being captured
+    var isCapturingFrontSide by remember { mutableStateOf(true) }
+    var frontImageFile by remember { mutableStateOf<File?>(null) }
+
+    // Camera state
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+    var imageCaptureUseCase by remember { mutableStateOf<ImageCapture?>(null) }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasCameraPermission = granted
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        permissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (hasCameraPermission) {
+            // Camera Preview
+            Box(modifier = Modifier.fillMaxWidth()) {
+                AndroidView(
+                    factory = { context ->
+                        val previewView = PreviewView(context).apply {
+                            this.scaleType = PreviewView.ScaleType.FILL_CENTER
+                        }
+
+                        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+
+                        cameraProviderFuture.addListener({
+                            cameraProvider = cameraProviderFuture.get()
+
+                            val preview = Preview.Builder().build()
+                            imageCaptureUseCase = ImageCapture.Builder()
+                                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                                .build()
+
+                            try {
+                                cameraProvider?.unbindAll()
+                                cameraProvider?.bindToLifecycle(
+                                    lifecycleOwner,
+                                    CameraSelector.DEFAULT_BACK_CAMERA,
+                                    preview,
+                                    imageCaptureUseCase
+                                )
+
+                                preview.setSurfaceProvider(previewView.surfaceProvider)
+                            } catch (e: Exception) {
+                                Log.e("IdScanner", "Camera initialization failed", e)
+                            }
+                        }, ContextCompat.getMainExecutor(context))
+
+                        previewView
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Overlay with scanning guide
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    // Top section with instructions
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.TopCenter)
+                            .padding(top = 16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = if (isCapturingFrontSide) "Scan Front of ID" else "Scan Back of ID",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Tips for best results:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "• Ensure good lighting\n• Avoid glare and shadows\n• Keep ID within frame\n• Hold steady",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+
+                    // Bottom section with capture button
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 32.dp)
+                    ) {
+                        FilledTonalButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    val file = File(
+                                        context.cacheDir,
+                                        if (isCapturingFrontSide) "id_front.jpg" else "id_back.jpg"
+                                    )
+
+                                    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+
+                                    imageCaptureUseCase?.takePicture(
+                                        outputOptions,
+                                        ContextCompat.getMainExecutor(context),
+                                        object : ImageCapture.OnImageSavedCallback {
+                                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                                if (isCapturingFrontSide) {
+                                                    frontImageFile = file
+                                                    isCapturingFrontSide = false
+                                                } else {
+                                                    // Both sides captured, upload images
+                                                    coroutineScope.launch {
+                                                        frontImageFile?.let { frontFile ->
+                                                            viewModel.uploadIdImages(frontFile, file)
+                                                            onScanComplete()
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            override fun onError(exc: ImageCaptureException) {
+                                                Log.e("IdScanner", "Failed to capture image", exc)
+                                            }
+                                        }
+                                    )
+                                }
+                            },
+                            modifier = Modifier
+                                .size(80.dp)
+                                .align(Alignment.Center),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.filledTonalButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                            )
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.photo_camera_24dp),
+                                contentDescription = "Capture ID",
+                                modifier = Modifier.size(24.dp),
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ViewModel for handling ID scanning logic and API calls
+class IdScannerViewModel : ViewModel() {
+    private val httpClient = HttpClient(Android) {
+        install(ContentNegotiation) {
+            json(Json {
+                prettyPrint = true
+                isLenient = true
+                ignoreUnknownKeys = true
+            })
+        }
+
+        install(Logging) {
+            logger = Logger.DEFAULT
+            level = LogLevel.ALL
+        }
+    }
+
+    //TODO: CHANGE TO GENERIC FROM CAMERAVIEWMODEL
+    @OptIn(InternalAPI::class)
+    suspend fun uploadIdImages(frontImage: File, backImage: File) {
+        try {
+            val multipartData = MultiPartFormDataContent(
+                formData {
+                    append("front_image", frontImage.readBytes(), Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=front.jpg")
+                    })
+                    append("back_image", backImage.readBytes(), Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=back.jpg")
+                    })
+                }
+            )
+
+            httpClient.post("http://192.168.1.209:8000/extract-data") {
+                body = multipartData
+            }
+        } catch (e: Exception) {
+            Log.e("IdScannerViewModel", "Failed to upload images", e)
+            throw e
+        }
+    }
+}

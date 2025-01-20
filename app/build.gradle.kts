@@ -51,6 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.play.services.mlkit.text.recognition.common)
+    implementation(libs.androidx.foundation.layout.android)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,4 +84,11 @@ dependencies {
     implementation(libs.play.services.mlkit.document.scanner)
     implementation(libs.coil.compose)
     implementation(libs.androidx.material.icons.extended)
+    implementation(libs.blinkid)
+    implementation (libs.ktor.client.serialization)
+    implementation (libs.ktor.client.logging)
+    implementation (libs.ktor.serialization.kotlinx.json)
+    implementation (libs.ktor.client.logging)
+    implementation (libs.kotlinx.serialization.json)
+
 }
