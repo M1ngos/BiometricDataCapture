@@ -85,7 +85,6 @@ dependencies {
     implementation(libs.play.services.mlkit.document.scanner)
     implementation(libs.coil.compose)
     implementation(libs.androidx.material.icons.extended)
-    implementation(libs.blinkid)
     implementation (libs.ktor.client.serialization)
     implementation (libs.ktor.client.logging)
     implementation (libs.ktor.serialization.kotlinx.json)
@@ -95,4 +94,7 @@ dependencies {
     implementation (libs.accompanist.insets)
     implementation (libs.exoplayer.core)
     implementation (libs.exoplayer.ui)
+    implementation (libs.core)
+    implementation (libs.calendar)
+    implementation(libs.androidx.ui.text.google.fonts)
 }

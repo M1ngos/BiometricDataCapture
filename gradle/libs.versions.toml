@@ -1,9 +1,9 @@
 [versions]
 accompanistInsets = "0.23.1"
 agp = "8.7.2"
-blinkid = "6.13.0"
 cameraCore = "1.3.0"
 coilCompose = "2.5.0"
+core = "1.0.2"
 exoplayerCore = "2.17.1"
 exoplayerUi = "2.17.1"
 faceDetection = "16.1.5"
@@ -50,8 +50,9 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-ui-text-google-fonts = { module = "androidx.compose.ui:ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
-blinkid = { module = "com.microblink:blinkid", version.ref = "blinkid" }
+calendar = { module = "com.maxkeppeler.sheets-compose-dialogs:calendar", version.ref = "core" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
+core = { module = "com.maxkeppeler.sheets-compose-dialogs:core", version.ref = "core" }
 exoplayer-core = { module = "com.google.android.exoplayer:exoplayer-core", version.ref = "exoplayerCore" }
 exoplayer-ui = { module = "com.google.android.exoplayer:exoplayer-ui", version.ref = "exoplayerUi" }
 face-detection = { module = "com.google.mlkit:face-detection", version.ref = "faceDetection" }

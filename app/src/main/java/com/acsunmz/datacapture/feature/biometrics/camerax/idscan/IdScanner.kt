@@ -288,7 +288,7 @@ class IdScannerViewModel : ViewModel() {
                 }
             )
 
-            httpClient.post("http://192.168.1.144:8000/extract-data") {
+            httpClient.post("http://192.168.1.209:8000/extract-data") {
                 body = multipartData
             }
         } catch (e: Exception) {
