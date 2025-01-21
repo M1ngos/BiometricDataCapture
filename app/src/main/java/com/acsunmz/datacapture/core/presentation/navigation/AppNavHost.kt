@@ -15,6 +15,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.acsunmz.datacapture.MainActivity
 import com.acsunmz.datacapture.core.presentation.navigation.screens.SendCaptureDataScreen
+import com.acsunmz.datacapture.core.presentation.navigation.screens.login.LoginScreen
+import com.acsunmz.datacapture.core.utils.getVideoUri
 import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ChooserScreen
@@ -36,11 +38,17 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.IdScanner
+        startDestination = Destinations.LoginScreen
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(
                 navController = navController,
+            )
+        }
+
+        composable<Destinations.LoginScreen> {
+            LoginScreen(
+                getVideoUri()
             )
         }
 
@@ -75,9 +83,9 @@ fun AppNavHost(
 
         composable<Destinations.IdScanner> {
             IdScanner (
-             onScanComplete = {
-                 navController.navigate(Destinations.CameraScreen)
-             }
+                 onScanComplete = {
+                     navController.navigate(Destinations.CameraScreen)
+                 }
             )
         }
 

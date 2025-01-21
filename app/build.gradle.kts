@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.play.services.mlkit.text.recognition.common)
     implementation(libs.androidx.foundation.layout.android)
+    implementation(libs.material)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -90,5 +91,8 @@ dependencies {
     implementation (libs.ktor.serialization.kotlinx.json)
     implementation (libs.ktor.client.logging)
     implementation (libs.kotlinx.serialization.json)
-
+    implementation (libs.androidx.ui.text.google.fonts)
+    implementation (libs.accompanist.insets)
+    implementation (libs.exoplayer.core)
+    implementation (libs.exoplayer.ui)
 }

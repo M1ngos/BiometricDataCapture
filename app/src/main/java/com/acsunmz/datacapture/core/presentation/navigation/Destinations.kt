@@ -7,6 +7,9 @@ class Destinations {
     object Onboarding
 
     @Serializable
+    object LoginScreen
+
+    @Serializable
     object AppointmentIdScreen
 
     @Serializable

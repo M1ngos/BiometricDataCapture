@@ -104,7 +104,7 @@ fun AppTheme(
         SideEffect {
             val window = (view.context as Activity).window
             if (darkTheme) {
-                window.statusBarColor = colorScheme.primary.toArgb()
+                window.statusBarColor = Color.Black.toArgb()
             } else {
                 window.statusBarColor = Color.Transparent.toArgb()
             }
