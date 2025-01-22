@@ -18,19 +18,13 @@ fun MainScreen(
     navController: NavHostController,
     onBoardingCompleted: Boolean,
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background,
-    ) {
-            Scaffold(
-                content = { innerPadding ->
-                    AppNavHost(
-                        modifier = Modifier.padding(innerPadding),
-                        navController = navController,
-                        completedOnboarding = onBoardingCompleted,
-                    )
-                }
+    Scaffold(
+        content = { innerPadding ->
+            AppNavHost(
+                modifier = Modifier.padding(innerPadding),
+                navController = navController,
+                completedOnboarding = onBoardingCompleted,
             )
-    }
-
+        }
+    )
 }

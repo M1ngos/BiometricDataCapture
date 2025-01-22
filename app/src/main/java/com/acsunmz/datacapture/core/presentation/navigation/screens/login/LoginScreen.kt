@@ -1,5 +1,6 @@
 package com.acsunmz.datacapture.core.presentation.navigation.screens.login
 
+import LoginViewModel
 import android.content.Context
 import android.net.Uri
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -24,6 +25,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -35,6 +38,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,21 +67,33 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.data.Appointment
+import com.acsunmz.datacapture.data.AppointmentStatus
+import com.acsunmz.datacapture.data.AppointmentType
+import com.acsunmz.datacapture.data.Driver
 import com.acsunmz.datacapture.ui.components.DatePickerFieldToModal
 import com.acsunmz.datacapture.ui.theme.Shapes
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import com.google.android.exoplayer2.ui.StyledPlayerView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(videoUri: Uri) {
+fun LoginScreen(
+    videoUri: Uri,
+    onLoginSuccess: (Driver, List<Appointment>) -> Unit
+) {
     val context = LocalContext.current
+    val viewModel: LoginViewModel = viewModel()
+    val loginState by viewModel.loginState.collectAsState()
 
     val focusManager = LocalFocusManager.current
-    var isVideoReady by remember { mutableStateOf(false) }
     val exoPlayer = remember { context.buildExoPlayer(videoUri) }
     var selectedDate by remember { mutableStateOf<Long?>(null) }
 
@@ -93,33 +109,25 @@ fun LoginScreen(videoUri: Uri) {
         Font(googleFont = fontName, fontProvider = provider)
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
-
-        if (!isVideoReady) {
-            // Placeholder UI shown while the video loads
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.White),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = Color.DarkGray)
+    LaunchedEffect(loginState) {
+        when (val state = loginState) {
+            is LoginState.Success -> {
+                onLoginSuccess(state.driver, state.appointments)
             }
+            is LoginState.Error -> {
+                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+            }
+            else -> { /* Initial state, do nothing */ }
         }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { context ->
-                VideoView(context).apply {
-                    setVideoURI(Uri.parse("your_video_url"))
-                    setOnPreparedListener {
-                        isVideoReady = true
-                        start()
-                    }
-                }
-            }
+            factory = { it.buildPlayerView(exoPlayer) },
+            modifier = Modifier
+                .fillMaxSize()
         )
 
-        // Content
         Column(
             Modifier
                 .fillMaxSize()
@@ -127,7 +135,6 @@ fun LoginScreen(videoUri: Uri) {
             verticalArrangement = Arrangement.Bottom,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -152,23 +159,29 @@ fun LoginScreen(videoUri: Uri) {
 
             TextInput(
                 inputType = InputType.DriverLicense,
+
                 keyboardActions = KeyboardActions(onDone = {
                     focusManager.clearFocus()
-                })
+                }),
+                onValueChange = { licenseId ->
+                    viewModel.updateLicenseId(licenseId)
+                }
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             DatePickerFieldToModal(
-                onDateSelected =  { date ->
+                onDateSelected = { date ->
                     selectedDate = date
+                    viewModel.updateDateOfBirth(date)
                 }
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { context.doLogin() },
+                onClick = { viewModel.attemptLogin() },
+                enabled = viewModel.isLoginEnabled(),
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary
@@ -229,7 +242,8 @@ sealed class InputType(
 fun TextInput(
     inputType: InputType,
     focusRequester: FocusRequester? = null,
-    keyboardActions: KeyboardActions
+    keyboardActions: KeyboardActions,
+    onValueChange: (String) -> Unit
 ) {
     var value by remember { mutableStateOf("") }
 
@@ -237,8 +251,9 @@ fun TextInput(
         value = value,
         onValueChange = { input ->
             if (input.length <= 8 && input.all { it.isDigit() }) {
-            value = input
-        }},
+                value = input
+                onValueChange(input)
+            }},
         modifier = Modifier
             .fillMaxWidth()
             .focusOrder(focusRequester ?: FocusRequester()),
@@ -281,3 +296,84 @@ private fun Context.buildPlayerView(exoPlayer: ExoPlayer) =
         useController = false
         resizeMode = RESIZE_MODE_ZOOM
     }
+
+
+
+// Mock
+
+
+@Composable
+fun AppointmentsList(
+    appointments: List<Appointment>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(
+            "Suas Consultas",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        if (appointments.isEmpty()) {
+            Text(
+                "Nenhuma consulta agendada",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.Gray
+            )
+        } else {
+            appointments.forEach { appointment ->
+                AppointmentItem(appointment)
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun AppointmentItem(appointment: Appointment) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = when (appointment.type) {
+                    AppointmentType.RENOVACAO -> "Renovação"
+                    AppointmentType.SEGUNDA_VIA -> "Segunda Via"
+                },
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Data: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(appointment.date))}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Horário: ${appointment.time}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+            Text(
+                text = "Status: ${appointment.status.name.lowercase()}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = when (appointment.status) {
+                    AppointmentStatus.SCHEDULED -> MaterialTheme.colorScheme.primary
+                    AppointmentStatus.COMPLETED -> Color.Green
+                    AppointmentStatus.CANCELLED -> Color.Red
+                }
+            )
+        }
+    }
+}

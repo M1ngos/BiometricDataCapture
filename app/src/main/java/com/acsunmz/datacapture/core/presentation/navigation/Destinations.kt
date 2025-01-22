@@ -10,6 +10,9 @@ class Destinations {
     object LoginScreen
 
     @Serializable
+    object AppointmentListScreen
+
+    @Serializable
     object AppointmentIdScreen
 
     @Serializable
