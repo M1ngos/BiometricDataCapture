@@ -105,7 +105,7 @@ fun DatePickerFieldToModal(
         onValueChange = { },
 //        label = { Text("DOB") },
         label = { Text(text = "Data de nascimento") },
-        placeholder = { Text("MM/DD/YYYY") },
+        placeholder = { Text("DD/MM/YYYY") },
         leadingIcon = {
             Icon(Icons.Default.DateRange, contentDescription = "Select date")
         },

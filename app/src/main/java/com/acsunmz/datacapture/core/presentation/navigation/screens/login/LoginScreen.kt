@@ -1,8 +1,8 @@
 package com.acsunmz.datacapture.core.presentation.navigation.screens.login
 
-import LoginViewModel
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.Toast
@@ -67,10 +67,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.data.Appointment
-import com.acsunmz.datacapture.data.AppointmentStatus
-import com.acsunmz.datacapture.data.AppointmentType
-import com.acsunmz.datacapture.data.Driver
 import com.acsunmz.datacapture.ui.components.DatePickerFieldToModal
 import com.acsunmz.datacapture.ui.theme.Shapes
 import com.google.android.exoplayer2.ExoPlayer
@@ -87,11 +83,14 @@ import java.util.Locale
 @Composable
 fun LoginScreen(
     videoUri: Uri,
-    onLoginSuccess: (Driver, List<Appointment>) -> Unit
+    navigate: () -> Unit
 ) {
     val context = LocalContext.current
     val viewModel: LoginViewModel = viewModel()
-    val loginState by viewModel.loginState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val authToken by viewModel.authToken.collectAsState()
+
+    val shouldNavigate = viewModel.shouldNavigate
 
     val focusManager = LocalFocusManager.current
     val exoPlayer = remember { context.buildExoPlayer(videoUri) }
@@ -109,15 +108,18 @@ fun LoginScreen(
         Font(googleFont = fontName, fontProvider = provider)
     )
 
-    LaunchedEffect(loginState) {
-        when (val state = loginState) {
-            is LoginState.Success -> {
-                onLoginSuccess(state.driver, state.appointments)
-            }
-            is LoginState.Error -> {
-                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
-            }
-            else -> { /* Initial state, do nothing */ }
+
+    LaunchedEffect(viewModel.shouldNavigate) {
+        if (viewModel.shouldNavigate) {
+            navigate()
+            // Reset the navigation flag
+            viewModel.shouldNavigate = false
+        }
+    }
+
+    LaunchedEffect(authToken) {
+        if (authToken != null) {
+            viewModel.saveToken(context, authToken!!)
         }
     }
 
@@ -173,7 +175,10 @@ fun LoginScreen(
             DatePickerFieldToModal(
                 onDateSelected = { date ->
                     selectedDate = date
-                    viewModel.updateDateOfBirth(date)
+                    Log.d("login-date", date.toString())
+                    if (date != null) {
+                        viewModel.updateDateOfBirth(date)
+                    }
                 }
             )
 
@@ -273,14 +278,6 @@ fun TextInput(
     )
 }
 
-private fun Context.doLogin() {
-    Toast.makeText(
-        this,
-        "Something went wrong, try again later!",
-        Toast.LENGTH_SHORT
-    ).show()
-}
-
 private fun Context.buildExoPlayer(uri: Uri) =
     ExoPlayer.Builder(this).build().apply {
         setMediaItem(MediaItem.fromUri(uri))
@@ -297,83 +294,3 @@ private fun Context.buildPlayerView(exoPlayer: ExoPlayer) =
         resizeMode = RESIZE_MODE_ZOOM
     }
 
-
-
-// Mock
-
-
-@Composable
-fun AppointmentsList(
-    appointments: List<Appointment>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            "Suas Consultas",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        if (appointments.isEmpty()) {
-            Text(
-                "Nenhuma consulta agendada",
-                style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray
-            )
-        } else {
-            appointments.forEach { appointment ->
-                AppointmentItem(appointment)
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-    }
-}
-
-@Composable
-fun AppointmentItem(appointment: Appointment) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth()
-        ) {
-            Text(
-                text = when (appointment.type) {
-                    AppointmentType.RENOVACAO -> "Renovação"
-                    AppointmentType.SEGUNDA_VIA -> "Segunda Via"
-                },
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Data: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(appointment.date))}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Text(
-                text = "Horário: ${appointment.time}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Text(
-                text = "Status: ${appointment.status.name.lowercase()}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = when (appointment.status) {
-                    AppointmentStatus.SCHEDULED -> MaterialTheme.colorScheme.primary
-                    AppointmentStatus.COMPLETED -> Color.Green
-                    AppointmentStatus.CANCELLED -> Color.Red
-                }
-            )
-        }
-    }
-}
