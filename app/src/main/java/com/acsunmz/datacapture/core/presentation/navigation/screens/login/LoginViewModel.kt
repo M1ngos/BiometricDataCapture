@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel.UploadStatus
@@ -31,19 +30,36 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 class LoginViewModel : ViewModel() {
+//    private val _loginStatus = mutableStateOf<LoginUiState>(LoginUiState.Initial)
+
+
     private var licenseId by mutableStateOf("")
     private var dateOfBirth by mutableStateOf<Long?>(null)
 
     private val _authToken = MutableStateFlow<String?>(null)
     val authToken: StateFlow<String?> = _authToken
 
-    private val _uiState = MutableStateFlow<LoginUiState>(LoginUiState.Initial)
-    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
-
+    private val _uiState = mutableStateOf<LoginUiState>(LoginUiState.Initial)
+//    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+    var uiState: LoginUiState
+        get() = _uiState.value
+        set(value) {
+            _uiState.value = value
+            // Start auto-dismiss timer for relevant statuses
+            if (value is LoginUiState.Success ||
+                value is LoginUiState.Error
+            ) {
+                startStatusDismissTimer()
+            }
+        }
     private var statusDismissJob: Job? = null
 
-    var shouldNavigate by mutableStateOf(false)
-        internal set
+    private val _shouldNavigate = mutableStateOf(false)
+    var shouldNavigate: Boolean
+        get() = _shouldNavigate.value
+        set(value) {
+            _shouldNavigate.value = value
+        }
 
     private val client = HttpClient(Android) {
         install(ContentNegotiation) {
@@ -108,13 +124,13 @@ class LoginViewModel : ViewModel() {
     }
 
     fun attemptLogin() {
-        if (!isLoginEnabled()) return
+        uiState = LoginUiState.Loading
+//        if (!isLoginEnabled()) return
 
         viewModelScope.launch {
             try {
-                _uiState.value = LoginUiState.Loading
 
-                val response: HttpResponse = client.post("http://192.168.1.144:8000/auth/login") {
+                val response: HttpResponse = client.post("http://192.168.1.209:8000/auth/login") {
                     contentType(ContentType.Application.Json)
                     setBody(LoginRequest(
                         licenseId = licenseId,
@@ -123,27 +139,26 @@ class LoginViewModel : ViewModel() {
                 }
                 when (response.status) {
                     HttpStatusCode.OK -> {
-                        _uiState.value = LoginUiState.Success("Conectado com sucesso")
+                        uiState = LoginUiState.Success("Conectado com sucesso")
                         val responseBody = response.bodyAsText()
                         val loginResponse = Json.decodeFromString<LoginResponse>(responseBody)
                         setToken(loginResponse.token)
-
 //                        Log.d("login","OK\n" +
 //                                "Credentials:${licenseId} and ${dateOfBirth}")
-                        delay(2000)
+//                        delay(2000)
                         shouldNavigate = true
                     }
                     HttpStatusCode.Unauthorized -> {
-                        _uiState.value = LoginUiState.Error("Credenciais inválidas. Por favor, verifique e tente novamente.")
+                        uiState= LoginUiState.Error("Credenciais inválidas. Por favor, verifique e tente novamente.")
 //                        Log.d("login","Unauthorized\n" +
 //                                "Credentials:${licenseId} and ${dateOfBirth}")
                     }
                     else -> {
-                        _uiState.value = LoginUiState.Error("Erro no login: ${response.status.description}")
+                        uiState = LoginUiState.Error("Erro no login: ${response.status.description}")
                     }
                 }
             } catch (e: Exception) {
-                _uiState.value = LoginUiState.Error("Erro de conexão: ${e.localizedMessage}")
+                uiState = LoginUiState.Error("Erro de conexão: ${e.localizedMessage}")
             }
         }
     }
@@ -166,6 +181,17 @@ class LoginViewModel : ViewModel() {
         sharedPreferences.edit().remove("auth_token").apply()
     }
 
+    private fun startStatusDismissTimer() {
+        // Cancel any existing timer
+        statusDismissJob?.cancel()
+
+        // Start new timer
+        statusDismissJob = viewModelScope.launch {
+            delay(3000)
+            Log.d("uiState", "Resetting to Initial state")
+            uiState = LoginUiState.Initial
+        }
+    }
 
     override fun onCleared() {
         super.onCleared()

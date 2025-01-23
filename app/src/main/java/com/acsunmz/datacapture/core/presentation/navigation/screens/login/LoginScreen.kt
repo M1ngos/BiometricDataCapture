@@ -5,10 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
-import android.widget.Toast
-import android.widget.VideoView
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +16,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -35,7 +35,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +42,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,30 +54,29 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel
+import com.acsunmz.datacapture.feature.biometrics.camerax.capture.DisplayStatus
 import com.acsunmz.datacapture.ui.components.DatePickerFieldToModal
 import com.acsunmz.datacapture.ui.theme.Shapes
+import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
+import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
 import com.google.android.exoplayer2.ui.StyledPlayerView
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,14 +86,12 @@ fun LoginScreen(
 ) {
     val context = LocalContext.current
     val viewModel: LoginViewModel = viewModel()
-    val uiState by viewModel.uiState.collectAsState()
+//    val uiState by viewModel.uiState.collectAsState()
     val authToken by viewModel.authToken.collectAsState()
-
-    val shouldNavigate = viewModel.shouldNavigate
 
     val focusManager = LocalFocusManager.current
     val exoPlayer = remember { context.buildExoPlayer(videoUri) }
-    var selectedDate by remember { mutableStateOf<Long?>(null) }
+    var selectedDate by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val fontName = GoogleFont("Unbounded")
 
@@ -108,6 +105,11 @@ fun LoginScreen(
         Font(googleFont = fontName, fontProvider = provider)
     )
 
+    LaunchedEffect(authToken) {
+        if (authToken != null) {
+            viewModel.saveToken(context, authToken!!)
+        }
+    }
 
     LaunchedEffect(viewModel.shouldNavigate) {
         if (viewModel.shouldNavigate) {
@@ -117,24 +119,45 @@ fun LoginScreen(
         }
     }
 
-    LaunchedEffect(authToken) {
-        if (authToken != null) {
-            viewModel.saveToken(context, authToken!!)
-        }
-    }
+//    val message = when (val status = viewModel.uiState) {
+//        is LoginViewModel.LoginUiState.Success -> status.message
+//        is LoginViewModel.LoginUiState.Error -> status.message
+//        else -> null
+//    }
+//
+//    message?.let {
+//        Text(
+//            text = it,
+//            style = MaterialTheme.typography.bodyLarge,
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(16.dp),
+//            color = MaterialTheme.colorScheme.onBackground
+//        )
+//    }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            factory = { it.buildPlayerView(exoPlayer) },
+
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-        )
+                .fillMaxWidth()
+                .align(Alignment.TopCenter)
+                .padding(16.dp)
+        ) {
+            DisplayStatus(viewModel)
+        }
+
+//        AndroidView(
+//            factory = { it.buildPlayerView(exoPlayer) },
+//            modifier = Modifier
+//                .fillMaxSize()
+//        )
 
         Column(
             Modifier
                 .fillMaxSize()
                 .padding(24.dp),
-            verticalArrangement = Arrangement.Bottom,
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Row(
@@ -200,7 +223,7 @@ fun LoginScreen(
 
             HorizontalDivider(
                 thickness = 1.dp,
-                color = Color.White.copy(alpha = 0.3f)
+//                color = Color.White.copy(alpha = 0.3f)
             )
 
             Row(
@@ -209,7 +232,7 @@ fun LoginScreen(
             ) {
                 Text(
                     "© 2025 INATRO. Desenvolvido por {placeholder}.",
-                    color = Color.White,
+//                    color = Color.White,
                     fontSize = 12.sp
                 )
 //                TextButton(onClick = {}) {
@@ -236,7 +259,7 @@ sealed class InputType(
         label = "N.º da Carta de Condução/Código",
         icon = Icons.Default.CreditCard,
         keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Next,
+            imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Number
         ),
         visualTransformation = VisualTransformation.None
@@ -250,7 +273,7 @@ fun TextInput(
     keyboardActions: KeyboardActions,
     onValueChange: (String) -> Unit
 ) {
-    var value by remember { mutableStateOf("") }
+    var value by rememberSaveable { mutableStateOf("") }
 
     TextField(
         value = value,
@@ -266,8 +289,6 @@ fun TextInput(
         label = { Text(text = inputType.label) },
         shape = Shapes.small,
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color.White,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         ),
@@ -294,3 +315,109 @@ private fun Context.buildPlayerView(exoPlayer: ExoPlayer) =
         resizeMode = RESIZE_MODE_ZOOM
     }
 
+
+
+@Composable
+fun DisplayStatus(viewModel: LoginViewModel) {
+    // Status area at the top
+    when (val status = viewModel.uiState) {
+        is LoginViewModel.LoginUiState.Loading -> {
+            Log.d("uiState", status.toString())
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        "Carregando...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+
+        is LoginViewModel.LoginUiState.Success -> {
+            Log.d("uiState", status.toString())
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = "Success",
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        status.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        }
+
+        is LoginViewModel.LoginUiState.Error -> {
+            Log.d("uiState", status.toString())
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.error_24dp),
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        status.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
+
+        is LoginViewModel.LoginUiState.Initial -> {}
+
+            else -> {} // Initial state
+    }
+}
