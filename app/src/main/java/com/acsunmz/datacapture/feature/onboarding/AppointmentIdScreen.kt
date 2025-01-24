@@ -48,7 +48,7 @@ fun AppointmentIdScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     BackHandler {
-        navController.popBackStack() // Navigate back to OnboardingScreen
+        navController.popBackStack()
     }
 
     AppointmentIdScreenContent(

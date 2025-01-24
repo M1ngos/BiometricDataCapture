@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.acsunmz.datacapture.MainActivity
+import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.core.presentation.screens.SendCaptureDataScreen
 import com.acsunmz.datacapture.ui.login.LoginScreen
 import com.acsunmz.datacapture.core.utils.getVideoUri
@@ -58,8 +59,15 @@ fun AppNavHost(
 
         composable<Destinations.AppointmentListScreen> {
             AppointmentsScreen(
+                navController = navController,
                 onLogout = {
-
+                    SessionManager.clearSession()
+                    navController.navigate(Destinations.LoginScreen){
+                        launchSingleTop = true
+                    }
+                },
+                onAppointmentClick = {
+                    navController.navigate(Destinations.ChooserScreen)
                 }
             )
         }
@@ -121,8 +129,12 @@ fun AppNavHost(
 
         composable<Destinations.ChooserScreen> {
             ChooserScreen(
+                navController = navController,
                 onDocumentTypeSelected = { documentType ->
                     navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
+                },
+                onBackPress = {
+
                 }
             )
         }

@@ -1,6 +1,5 @@
 package com.acsunmz.datacapture.feature.biometrics.camerax.idscan
 
-import android.graphics.drawable.Icon
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,24 +13,32 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButtonDefaults.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.acsunmz.datacapture.R
 
 // ChooserScreen.kt
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChooserScreen(
-    onDocumentTypeSelected: (DocumentType) -> Unit
+    onDocumentTypeSelected: (DocumentType) -> Unit,
+    onBackPress: () -> Unit,
+    navController: NavHostController
 ) {
     val documentTypes = listOf(
         DocumentType.MozambicanID,
@@ -39,107 +46,67 @@ fun ChooserScreen(
         DocumentType.ElectionCard
     )
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-        Icon(
-            painter = painterResource(
-                R.drawable.id_card_default
-            ),
-            contentDescription = null,
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text(text = "Escolha o Documento") },
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Voltar"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .size(100.dp)
-                .align(Alignment.CenterHorizontally)
-            ,
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = "Scan your identification document",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 24.dp, bottom = 40.dp)
-        )
-
-
-        Text(
-            text = "Document type",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .padding(top = 10.dp, bottom = 10.dp)
-
-        )
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(40.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            items(documentTypes) { documentType ->
-                DocumentTypeCard(
-                    documentType = documentType,
-                    onClick = { onDocumentTypeSelected(documentType) }
-                )
+            Icon(
+                painter = painterResource(R.drawable.id_card_default),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(100.dp)
+                    .align(Alignment.CenterHorizontally),
+                tint = MaterialTheme.colorScheme.primary
+            )
+
+            Text(
+                text = "1. Digitalize o seu documento de identificação",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 24.dp, bottom = 40.dp)
+            )
+
+//            Text(
+//                text = "Tipo de Documento",
+//                style = MaterialTheme.typography.titleMedium,
+//                modifier = Modifier.padding(bottom = 10.dp)
+//            )
+
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                items(documentTypes) { documentType ->
+                    DocumentTypeCard(
+                        documentType = documentType,
+                        onClick = { onDocumentTypeSelected(documentType) }
+                    )
+                }
             }
         }
     }
 }
 
-@Preview
-@Composable
-fun ChooserScreenPreview(){
-    val documentTypes = listOf(
-        DocumentType.MozambicanID,
-        DocumentType.Passport,
-        DocumentType.ElectionCard
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .fillMaxWidth()
-    ) {
-
-        Icon(
-            painter = painterResource(
-                R.drawable.id_card_default
-            ),
-            contentDescription = null,
-            modifier = Modifier
-                .size(100.dp)
-                .align(Alignment.CenterHorizontally)
-            ,
-            tint = MaterialTheme.colorScheme.primary
-        )
-
-        Text(
-            text = "Scan your identification document",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(top = 24.dp, bottom = 40.dp)
-        )
-
-
-        Text(
-            text = "Document type",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier
-                .padding(top = 10.dp, bottom = 10.dp)
-
-        )
-
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(40.dp)
-        ) {
-            items(documentTypes) { documentType ->
-                DocumentTypeCard(
-                    documentType = documentType,
-                    onClick = {  }
-                )
-            }
-        }
-    }
-}
 
 @Composable
 private fun DocumentTypeCard(
@@ -172,3 +139,59 @@ private fun DocumentTypeCard(
         }
     }
 }
+
+//@Preview
+//@Composable
+//fun ChooserScreenPreview(){
+//    val documentTypes = listOf(
+//        DocumentType.MozambicanID,
+//        DocumentType.Passport,
+//        DocumentType.ElectionCard
+//    )
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//            .fillMaxWidth()
+//    ) {
+//
+//        Icon(
+//            painter = painterResource(
+//                R.drawable.id_card_default
+//            ),
+//            contentDescription = null,
+//            modifier = Modifier
+//                .size(100.dp)
+//                .align(Alignment.CenterHorizontally)
+//            ,
+//            tint = MaterialTheme.colorScheme.primary
+//        )
+//
+//        Text(
+//            text = "Scan your identification document",
+//            style = MaterialTheme.typography.titleLarge,
+//            modifier = Modifier.padding(top = 24.dp, bottom = 40.dp)
+//        )
+//
+//
+////        Text(
+////            text = "Document type",
+////            style = MaterialTheme.typography.titleMedium,
+////            modifier = Modifier
+////                .padding(top = 10.dp, bottom = 10.dp)
+////
+////        )
+//
+//        LazyColumn(
+//            verticalArrangement = Arrangement.spacedBy(40.dp)
+//        ) {
+//            items(documentTypes) { documentType ->
+//                DocumentTypeCard(
+//                    documentType = documentType,
+//                    onClick = {  }
+//                )
+//            }
+//        }
+//    }
+//}

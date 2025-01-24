@@ -37,6 +37,7 @@ object SessionManager {
     // Clear session
     fun clearSession() {
         editor.remove(KEY_DRIVER).apply()
+        editor.remove(PREF_NAME).apply()
     }
 }
 

@@ -3,7 +3,11 @@ package com.acsunmz.datacapture.core.utils
 import android.net.Uri
 
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.core.data.SessionManager
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -14,6 +18,14 @@ fun getVideoUri(): Uri {
 fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
+}
+
+fun displayFormattedDate(epoch: Long): String? {
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.getDefault())
+    val formattedDate = Instant.ofEpochSecond(epoch)
+        .atZone(ZoneId.systemDefault())
+        .format(formatter)
+    return formattedDate
 }
 
 // Utility function to format date input

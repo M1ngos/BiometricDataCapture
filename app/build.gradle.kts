@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinX.serialization.plugin)
+    id("kotlin-kapt")
 }
 
 android {
@@ -98,5 +99,5 @@ dependencies {
     implementation (libs.calendar)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation (libs.gson)
-
+    implementation (libs.play.services.mlkit.text.recognition)
 }

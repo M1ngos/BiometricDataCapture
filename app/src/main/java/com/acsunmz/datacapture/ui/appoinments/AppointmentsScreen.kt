@@ -1,5 +1,7 @@
 package com.acsunmz.datacapture.ui.appoinments
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,36 +18,37 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import java.util.*
-import android.util.Log
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.core.model.Appointment
 import com.acsunmz.datacapture.core.model.AppointmentStatus
 import com.acsunmz.datacapture.core.model.AppointmentType
 import com.acsunmz.datacapture.core.model.Driver
-import kotlinx.coroutines.launch
+import com.acsunmz.datacapture.core.utils.displayFormattedDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentsScreen(
     onLogout: () -> Unit,
+    onAppointmentClick: (Appointment) -> Unit,
+    navController: NavHostController
 ) {
+    val context = LocalContext.current
+    val viewModel: AppointmentsScreenViewModel = viewModel(
+        factory = remember { AppointmentsScreenViewModelFactory(context) }
+    )
     val driver = SessionManager.getDriver()
-    // Use the driver info (display it or perform logic)
-//    println("Driver Name: ${driver.name}")
-//    Log.d("Getting driver",driver.licenseId)
+    val appointments by viewModel.appointments
 
-    var appointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
-    val scope = rememberCoroutineScope()
+    BackHandler {
+        navController.popBackStack()
+    }
 
     LaunchedEffect(Unit) {
-        scope.launch {
-            try {
-//                appointments = apiService.getAppointments(token)
-            } catch (e: Exception) {
-                Log.e("AppointmentsScreen", "Error fetching appointments", e)
-            }
-        }
+        viewModel.fetchAppointments()
     }
 
     if (driver != null) {
@@ -92,7 +95,8 @@ fun AppointmentsScreen(
                         appointments = appointments,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1f),
+                        onAppointmentClick = onAppointmentClick
                     )
                 }
             }
@@ -128,7 +132,12 @@ private fun DriverInfoCard(
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(
-                text = "Data de Nascimento: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(driver.dateOfBirth))}",
+                text = "Data de Nascimento: ${
+                    SimpleDateFormat(
+                        "dd/MM/yyyy",
+                        Locale.getDefault()
+                    ).format(Date(driver.dateOfBirth))
+                }",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -138,7 +147,8 @@ private fun DriverInfoCard(
 @Composable
 private fun AppointmentsList(
     appointments: List<Appointment>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAppointmentClick: (Appointment) -> Unit
 ) {
     LazyColumn(
         modifier = modifier,
@@ -149,7 +159,10 @@ private fun AppointmentsList(
             items = appointments,
             key = { it.id }
         ) { appointment ->
-            AppointmentCard(appointment = appointment)
+            AppointmentCard(
+                appointment = appointment,
+                onClick = { onAppointmentClick(appointment) }
+            )
         }
     }
 }
@@ -157,10 +170,13 @@ private fun AppointmentsList(
 @Composable
 private fun AppointmentCard(
     appointment: Appointment,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -193,7 +209,7 @@ private fun AppointmentCard(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = "Data: ${SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(appointment.date))}",
+                    text = "Data: ${displayFormattedDate(appointment.date)}",
                     style = MaterialTheme.typography.bodyMedium
                 )
 
