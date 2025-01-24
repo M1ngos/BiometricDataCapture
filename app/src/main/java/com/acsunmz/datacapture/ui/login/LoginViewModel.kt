@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.navigation.screens.login
+package com.acsunmz.datacapture.core.presentation.screens.login
 
 import android.content.Context
 import android.util.Log
@@ -7,7 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel.UploadStatus
+import com.acsunmz.datacapture.core.model.Driver
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -23,7 +23,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -84,14 +83,6 @@ class LoginViewModel : ViewModel() {
         @SerialName("driver") val driver: Driver
     )
 
-    @Serializable
-    data class Driver(
-        @SerialName("id") val id: Int,
-        @SerialName("license_id") val licenseId: String,
-        @SerialName("name") val name: String,
-        @SerialName("date_of_birth") val dateOfBirth: Long
-    )
-
     sealed class LoginUiState {
         data object Initial : LoginUiState()
         data object Loading : LoginUiState()
@@ -132,10 +123,12 @@ class LoginViewModel : ViewModel() {
 
                 val response: HttpResponse = client.post("http://192.168.1.209:8000/auth/login") {
                     contentType(ContentType.Application.Json)
-                    setBody(LoginRequest(
+                    setBody(
+                        LoginRequest(
                         licenseId = licenseId,
                         dateOfBirth = dateOfBirth ?: 0
-                    ))
+                    )
+                    )
                 }
                 when (response.status) {
                     HttpStatusCode.OK -> {
@@ -149,12 +142,14 @@ class LoginViewModel : ViewModel() {
                         shouldNavigate = true
                     }
                     HttpStatusCode.Unauthorized -> {
-                        uiState= LoginUiState.Error("Credenciais inválidas. Por favor, verifique e tente novamente.")
+                        uiState=
+                            LoginUiState.Error("Credenciais inválidas. Por favor, verifique e tente novamente.")
 //                        Log.d("login","Unauthorized\n" +
 //                                "Credentials:${licenseId} and ${dateOfBirth}")
                     }
                     else -> {
-                        uiState = LoginUiState.Error("Erro no login: ${response.status.description}")
+                        uiState =
+                            LoginUiState.Error("Erro no login: ${response.status.description}")
                     }
                 }
             } catch (e: Exception) {

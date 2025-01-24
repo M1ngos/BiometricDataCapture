@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.navigation.screens.login
+package com.acsunmz.datacapture.core.presentation.screens.login
 
 import android.content.Context
 import android.net.Uri
@@ -22,7 +22,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -60,18 +59,12 @@ import androidx.compose.ui.text.googlefonts.GoogleFont
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.DisplayStatus
 import com.acsunmz.datacapture.ui.components.DatePickerFieldToModal
 import com.acsunmz.datacapture.ui.theme.Shapes
-import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
-import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player
