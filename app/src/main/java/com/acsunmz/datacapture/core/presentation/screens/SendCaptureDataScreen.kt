@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.navigation.screens
+package com.acsunmz.datacapture.core.presentation.screens
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
 import com.acsunmz.datacapture.core.network.SendCaptureDataViewModel
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File

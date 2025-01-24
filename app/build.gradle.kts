@@ -97,4 +97,6 @@ dependencies {
     implementation (libs.core)
     implementation (libs.calendar)
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation (libs.gson)
+
 }

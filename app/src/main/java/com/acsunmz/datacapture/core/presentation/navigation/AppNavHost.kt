@@ -13,18 +13,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.acsunmz.datacapture.MainActivity
-import com.acsunmz.datacapture.core.presentation.navigation.screens.SendCaptureDataScreen
-import com.acsunmz.datacapture.core.presentation.navigation.screens.login.LoginScreen
+import com.acsunmz.datacapture.core.presentation.screens.SendCaptureDataScreen
+import com.acsunmz.datacapture.ui.login.LoginScreen
 import com.acsunmz.datacapture.core.utils.getVideoUri
 import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ChooserScreen
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ConfirmationScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.DocumentType
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerScreen
 import com.acsunmz.datacapture.feature.docscanner.DocumentScanner
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
+import com.acsunmz.datacapture.ui.appoinments.AppointmentsScreen
 import kotlin.system.exitProcess
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -49,9 +49,17 @@ fun AppNavHost(
             LoginScreen(
                 getVideoUri(),
                 navigate = {
-                    navController.navigate(Destinations.CameraScreen) {
+                    navController.navigate(Destinations.AppointmentListScreen) {
                         popUpTo(Destinations.LoginScreen) { inclusive = true }
                     }
+                }
+            )
+        }
+
+        composable<Destinations.AppointmentListScreen> {
+            AppointmentsScreen(
+                onLogout = {
+
                 }
             )
         }

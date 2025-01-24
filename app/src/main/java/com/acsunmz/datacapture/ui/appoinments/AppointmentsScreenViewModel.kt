@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.screens.appoinments
+package com.acsunmz.datacapture.ui.appoinments
 
 import android.content.Context
 import android.util.Log

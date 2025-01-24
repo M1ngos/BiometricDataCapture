@@ -15,12 +15,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
+import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.main.MainScreen
 import com.acsunmz.datacapture.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        SessionManager.initialize(this)
         enableEdgeToEdge()
         setContent {
             AppTheme {

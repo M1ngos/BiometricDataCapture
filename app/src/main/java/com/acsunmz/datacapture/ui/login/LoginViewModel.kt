@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.screens.login
+package com.acsunmz.datacapture.ui.login
 
 import android.content.Context
 import android.util.Log
@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.core.model.Driver
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -30,8 +31,6 @@ import kotlinx.serialization.json.Json
 
 class LoginViewModel : ViewModel() {
 //    private val _loginStatus = mutableStateOf<LoginUiState>(LoginUiState.Initial)
-
-
     private var licenseId by mutableStateOf("")
     private var dateOfBirth by mutableStateOf<Long?>(null)
 
@@ -46,7 +45,8 @@ class LoginViewModel : ViewModel() {
             _uiState.value = value
             // Start auto-dismiss timer for relevant statuses
             if (value is LoginUiState.Success ||
-                value is LoginUiState.Error
+                value is LoginUiState.Error ||
+                value is LoginUiState.AutoLogin
             ) {
                 startStatusDismissTimer()
             }
@@ -87,9 +87,21 @@ class LoginViewModel : ViewModel() {
         data object Initial : LoginUiState()
         data object Loading : LoginUiState()
         data class Error(val message: String) : LoginUiState()
+        data class AutoLogin(val message: String) : LoginUiState()
         data class Success(val message: String) : LoginUiState()
     }
 
+    init {
+        // Check if the driver is already logged in
+        val driver = SessionManager.getDriver()
+        if (driver != null) {
+            // If driver exists, attempt login to refresh token
+            licenseId = driver.licenseId
+            dateOfBirth = driver.dateOfBirth
+            _uiState.value = LoginUiState.AutoLogin("Auto login usando credenciais salvas!")
+            attemptLogin()
+        }
+    }
 
     fun setToken(token: String) {
         _authToken.value = token
@@ -136,6 +148,16 @@ class LoginViewModel : ViewModel() {
                         val responseBody = response.bodyAsText()
                         val loginResponse = Json.decodeFromString<LoginResponse>(responseBody)
                         setToken(loginResponse.token)
+
+                        val driver = Driver(
+                            id = loginResponse.driver.id,
+                            licenseId = loginResponse.driver.licenseId,
+                            name = loginResponse.driver.name,
+                            dateOfBirth = loginResponse.driver.dateOfBirth
+                        )
+                        // Save driver info in SharedPreferences
+                        SessionManager.saveDriver(driver)
+
 //                        Log.d("login","OK\n" +
 //                                "Credentials:${licenseId} and ${dateOfBirth}")
 //                        delay(2000)

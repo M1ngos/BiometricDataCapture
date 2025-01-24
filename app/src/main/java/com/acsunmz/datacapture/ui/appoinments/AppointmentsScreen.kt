@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.screens.appoinments
+package com.acsunmz.datacapture.ui.appoinments
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.core.model.Appointment
 import com.acsunmz.datacapture.core.model.AppointmentStatus
 import com.acsunmz.datacapture.core.model.AppointmentType
@@ -30,6 +30,11 @@ import kotlinx.coroutines.launch
 fun AppointmentsScreen(
     onLogout: () -> Unit,
 ) {
+    val driver = SessionManager.getDriver()
+    // Use the driver info (display it or perform logic)
+//    println("Driver Name: ${driver.name}")
+//    Log.d("Getting driver",driver.licenseId)
+
     var appointments by remember { mutableStateOf<List<Appointment>>(emptyList()) }
     val scope = rememberCoroutineScope()
 
@@ -43,55 +48,58 @@ fun AppointmentsScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Minhas Marcações",
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onLogout) {
-                        Icon(
-                            imageVector = Icons.Default.Logout,
-                            contentDescription = "Logout"
+    if (driver != null) {
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Minhas Marcações",
+                            style = MaterialTheme.typography.titleLarge
                         )
+                    },
+                    actions = {
+                        IconButton(onClick = onLogout) {
+                            Icon(
+                                imageVector = Icons.Default.Logout,
+                                contentDescription = "Logout"
+                            )
+                        }
                     }
-                }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            DriverInfoCard(
-                driver = driver,
+                )
+            }
+        ) { padding ->
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            )
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                DriverInfoCard(
+                    driver = driver,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                )
 
-            if (appointments.isEmpty()) {
-                EmptyAppointmentsView(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-            } else {
-                AppointmentsList(
-                    appointments = appointments,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
+                if (appointments.isEmpty()) {
+                    EmptyAppointmentsView(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                } else {
+                    AppointmentsList(
+                        appointments = appointments,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                }
             }
         }
     }
 }
+
 
 @Composable
 private fun DriverInfoCard(
@@ -116,7 +124,7 @@ private fun DriverInfoCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Carta de Condução: ${driver.licenseId}",
+                text = "Carta de Condução nr: ${driver.licenseId}",
                 style = MaterialTheme.typography.bodyMedium
             )
             Text(

@@ -67,4 +67,7 @@ val md_theme_dark_scrim = Color(0xFF000000)
 val YellowStatusBackground = Color(0xFFFFEB3B) // A bright yellow
 val YellowStatusContent = Color(0xFF000000) // Black for the text and icon for contrast
 
+val LightBlueStatusBackground = Color(0xFF81D4FA) // A soft light blue
+val LightBlueStatusContent = Color(0xFF000000) // Black for the text and icon for contrast
+
 val seed = Color(0xFF388E3C)  // Green seed color
