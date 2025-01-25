@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,13 +20,15 @@ import com.acsunmz.datacapture.ui.login.LoginScreen
 import com.acsunmz.datacapture.core.utils.getVideoUri
 import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ChooserScreen
+import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ConfirmScan
+import com.acsunmz.datacapture.ui.documents.ChooserScreen
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.DocumentType
 import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerScreen
 import com.acsunmz.datacapture.feature.docscanner.DocumentScanner
 import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
 import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
 import com.acsunmz.datacapture.ui.appoinments.AppointmentsScreen
+import com.acsunmz.datacapture.ui.documents.IdConfirmationScreen
 import kotlin.system.exitProcess
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -93,16 +96,21 @@ fun AppNavHost(
             )
         }
 
-
-
         composable<Destinations.IdScanner> {
-            IdScanner (
-                 onScanComplete = {
-                     navController.navigate(Destinations.CameraScreen)
-                 }
+            IdScanner(
+                onScanComplete = {
+                    navController.navigate(Destinations.ConfirmScan)
+                }
             )
         }
 
+        composable<Destinations.ConfirmScan> {
+            ConfirmScan(
+                onProceed = {
+                    navController.popBackStack()
+                }
+            )
+        }
 
         composable<Destinations.LivenessDetectionScreen> {
             LivenessDetectionScreen(
@@ -131,11 +139,10 @@ fun AppNavHost(
             ChooserScreen(
                 navController = navController,
                 onDocumentTypeSelected = { documentType ->
-                    navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
+//                    navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
+                    navController.navigate(Destinations.IdScanner)
                 },
-                onBackPress = {
-
-                }
+                onBackPress = {}
             )
         }
 

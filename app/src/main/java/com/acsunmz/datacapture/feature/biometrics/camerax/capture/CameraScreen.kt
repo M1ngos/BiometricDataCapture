@@ -105,24 +105,6 @@ fun CameraScreen(
         }
     }
 
-//    val message = when (val status = viewModel.uploadStatus) {
-//        is CameraViewModel.UploadStatus.Success -> status.message
-//        is CameraViewModel.UploadStatus.Error -> status.message
-//        else -> null
-//    }
-//
-//
-//    message?.let {
-//        Text(
-//            text = it,
-//            style = MaterialTheme.typography.bodyLarge,
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(16.dp),
-//            color = MaterialTheme.colorScheme.onBackground
-//        )
-//    }
-
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasCameraPermission) {
             Box(

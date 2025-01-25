@@ -314,20 +314,20 @@ private fun setupRealtimeScanning(
 
 
 
-private fun extractFields(fullText: String): Map<String, String> {
+fun extractFields(fullText: String): Map<String, String> {
     val fields = mutableMapOf<String, String>()
 
     Log.d("FieldExtraction", "Extracted Fields: $fields")
 
-//    // ID Number extraction (format: XXXXXXXXXXXXXXXXX or with prefix Nº:)
-//    "(?:Nº:|N°:)\\s*(\\d{13}[A-Z])".toRegex().find(fullText)?.groupValues?.get(1)?.let {
-//        fields["idNumber"] = it
-//    } ?: run {
-//        // Try alternative pattern from MRZ
-//        "IDMOZA[A-Z0-9]+".toRegex().find(fullText)?.value?.let {
-//            fields["idNumber"] = it.substring(6, 19)
-//        }
-//    }
+    // ID Number extraction (format: XXXXXXXXXXXXXXXXX or with prefix Nº:)
+    "(?:Nº:|N°:)\\s*(\\d{13}[A-Z])".toRegex().find(fullText)?.groupValues?.get(1)?.let {
+        fields["idNumber"] = it
+    } ?: run {
+        // Try alternative pattern from MRZ
+        "IDMOZA[A-Z0-9]+".toRegex().find(fullText)?.value?.let {
+            fields["idNumber"] = it.substring(6, 19)
+        }
+    }
 
     // Name extraction
     "(?:NOME\\s*/\\s*NAME:?)\\s*([A-ZÁÉÍÓÚÇÑ\\s]+?)(?=\\s*(?:DATA|LUGAR|$))".toRegex()

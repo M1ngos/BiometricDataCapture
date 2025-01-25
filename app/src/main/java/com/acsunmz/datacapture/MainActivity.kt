@@ -1,6 +1,7 @@
 package com.acsunmz.datacapture
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -18,10 +19,16 @@ import androidx.navigation.compose.rememberNavController
 import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.main.MainScreen
 import com.acsunmz.datacapture.ui.theme.AppTheme
+import org.opencv.android.OpenCVLoader
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (!OpenCVLoader.initDebug())
+            Log.e("OpenCV", "Unable to load OpenCV!");
+        else
+            Log.d("OpenCV", "OpenCV loaded Successfully!");
         SessionManager.initialize(this)
         enableEdgeToEdge()
         setContent {

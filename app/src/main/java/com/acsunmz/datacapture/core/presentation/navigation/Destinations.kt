@@ -34,6 +34,12 @@ class Destinations {
     object IdScanner
 
     @Serializable
+    object ConfirmScan
+
+    @Serializable
+    object IdConfirmationScreen
+
+    @Serializable
     object ConfirmationScreen
 
     @Serializable

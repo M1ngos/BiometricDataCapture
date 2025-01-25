@@ -153,8 +153,15 @@ class LoginViewModel : ViewModel() {
                             id = loginResponse.driver.id,
                             licenseId = loginResponse.driver.licenseId,
                             name = loginResponse.driver.name,
-                            dateOfBirth = loginResponse.driver.dateOfBirth
+                            dateOfBirth = loginResponse.driver.dateOfBirth,
+                            licenceNumber = loginResponse.driver.licenceNumber,
+                            issueNumber = loginResponse.driver.issueNumber,
+                            expiryDate = loginResponse.driver.expiryDate,
+                            placeOfIssue = loginResponse.driver.placeOfIssue,
+                            gender = loginResponse.driver.gender,
+                            restrictions = loginResponse.driver.restrictions
                         )
+
                         // Save driver info in SharedPreferences
                         SessionManager.saveDriver(driver)
 

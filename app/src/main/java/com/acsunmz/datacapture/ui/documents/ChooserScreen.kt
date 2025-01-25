@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.biometrics.camerax.idscan
+package com.acsunmz.datacapture.ui.documents
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.acsunmz.datacapture.R
+import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.DocumentType
 
 // ChooserScreen.kt
 @OptIn(ExperimentalMaterial3Api::class)
@@ -49,7 +50,7 @@ fun ChooserScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text(text = "Escolha o Documento") },
+                title = { Text(text = "Escolha do Documento") },
                 navigationIcon = {
                     IconButton(onClick = {
                         navController.popBackStack()

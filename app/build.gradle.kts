@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinX.serialization.plugin)
+    id ("kotlin-parcelize")
     id("kotlin-kapt")
 }
 
@@ -100,4 +101,7 @@ dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation (libs.gson)
     implementation (libs.play.services.mlkit.text.recognition)
+    implementation (libs.text.recognition.v1600)
+    implementation (libs.opencv)
+    implementation (libs.lottie.compose)
 }

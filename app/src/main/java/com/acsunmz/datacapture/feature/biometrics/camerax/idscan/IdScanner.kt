@@ -1,87 +1,110 @@
-import android.os.Build
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.pm.PackageManager
+import androidx.compose.ui.graphics.Color
+import android.os.Build
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.camera.core.ImageProxy
+import android.graphics.Rect
+import android.media.MediaPlayer
+import android.net.Uri
+import android.widget.VideoView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.OptIn
+import androidx.camera.core.AspectRatio
+import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.Android
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.kotlinx.serializer.KotlinxSerializer
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.post
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import io.ktor.util.InternalAPI
+import com.acsunmz.datacapture.core.model.CardSide
+import com.acsunmz.datacapture.core.model.IdData
+import com.acsunmz.datacapture.core.model.ScanState
+import com.acsunmz.datacapture.core.network.ScanSide
+import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.IdScanViewModel
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
+import okhttp3.internal.platform.android.BouncyCastleSocketAdapter.Companion.factory
+import okhttp3.internal.platform.android.ConscryptSocketAdapter.Companion.factory
 import java.io.File
-import io.ktor.client.*
-import io.ktor.client.engine.android.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.kotlinx.json.json
+import java.util.concurrent.Executors
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalGetImage::class)
-@RequiresApi(Build.VERSION_CODES.R)
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun IdScanner(
-    viewModel: IdScannerViewModel = viewModel(),
+    viewModel: IdScanViewModel = viewModel(),
     onScanComplete: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
+    var currentSide by remember { mutableStateOf(ScanSide.FRONT) }
 
+    // Camera setup
+    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
+    var imageCaptureUseCase by remember { mutableStateOf<ImageCapture?>(null) }
     var hasCameraPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -91,20 +114,11 @@ fun IdScanner(
         )
     }
 
-    // State for tracking which side of ID is being captured
-    var isCapturingFrontSide by remember { mutableStateOf(true) }
-    var frontImageFile by remember { mutableStateOf<File?>(null) }
-
-    // Camera state
-    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
-    var imageCaptureUseCase by remember { mutableStateOf<ImageCapture?>(null) }
-
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { granted ->
-            hasCameraPermission = granted
-        }
-    )
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        hasCameraPermission = granted
+    }
 
     LaunchedEffect(Unit) {
         permissionLauncher.launch(Manifest.permission.CAMERA)
@@ -112,188 +126,265 @@ fun IdScanner(
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (hasCameraPermission) {
-            // Camera Preview
-            Box(modifier = Modifier.fillMaxWidth()) {
-                AndroidView(
-                    factory = { context ->
-                        val previewView = PreviewView(context).apply {
-                            this.scaleType = PreviewView.ScaleType.FILL_CENTER
-                        }
-
-                        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-
-                        cameraProviderFuture.addListener({
-                            cameraProvider = cameraProviderFuture.get()
-
-                            val preview = Preview.Builder().build()
-                            imageCaptureUseCase = ImageCapture.Builder()
-                                .setTargetAspectRatio(AspectRatio.RATIO_4_3)
-                                .build()
-
-                            try {
-                                cameraProvider?.unbindAll()
-                                cameraProvider?.bindToLifecycle(
-                                    lifecycleOwner,
-                                    CameraSelector.DEFAULT_BACK_CAMERA,
-                                    preview,
-                                    imageCaptureUseCase
-                                )
-
-                                preview.setSurfaceProvider(previewView.surfaceProvider)
-                            } catch (e: Exception) {
-                                Log.e("IdScanner", "Camera initialization failed", e)
-                            }
-                        }, ContextCompat.getMainExecutor(context))
-
-                        previewView
-                    },
-                    modifier = Modifier.fillMaxSize()
-                )
-
-                // Overlay with scanning guide
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    // Top section with instructions
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.TopCenter)
-                            .padding(top = 16.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = if (isCapturingFrontSide) "Scan Front of ID" else "Scan Back of ID",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Tips for best results:",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Text(
-                                text = "• Ensure good lighting\n• Avoid glare and shadows\n• Keep ID within frame\n• Hold steady",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
+            AndroidView(
+                factory = { context ->
+                    val previewView = PreviewView(context).apply {
+                        scaleType = PreviewView.ScaleType.FILL_CENTER
                     }
 
-                    // Bottom section with capture button
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 32.dp)
-                    ) {
-                        FilledTonalButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    val file = File(
-                                        context.cacheDir,
-                                        if (isCapturingFrontSide) "id_front.jpg" else "id_back.jpg"
-                                    )
+                    val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
+                    cameraProviderFuture.addListener({
+                        cameraProvider = cameraProviderFuture.get()
 
-                                    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+                        val preview = Preview.Builder().build()
+                        imageCaptureUseCase = ImageCapture.Builder()
+                            .setTargetAspectRatio(AspectRatio.RATIO_4_3)
+                            .build()
 
-                                    imageCaptureUseCase?.takePicture(
-                                        outputOptions,
-                                        ContextCompat.getMainExecutor(context),
-                                        object : ImageCapture.OnImageSavedCallback {
-                                            override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                                                if (isCapturingFrontSide) {
-                                                    frontImageFile = file
-                                                    isCapturingFrontSide = false
-                                                } else {
-                                                    // Both sides captured, upload images
-                                                    coroutineScope.launch {
-                                                        frontImageFile?.let { frontFile ->
-                                                            viewModel.uploadIdImages(frontFile, file)
-                                                            onScanComplete()
-                                                        }
-                                                    }
+                        try {
+                            cameraProvider?.unbindAll()
+                            cameraProvider?.bindToLifecycle(
+                                lifecycleOwner,
+                                CameraSelector.DEFAULT_BACK_CAMERA,
+                                preview,
+                                imageCaptureUseCase
+                            )
+                            preview.setSurfaceProvider(previewView.surfaceProvider)
+                        } catch (e: Exception) {
+                            Log.e("IdScanner", "Camera init failed", e)
+                        }
+                    }, ContextCompat.getMainExecutor(context))
+
+                    previewView
+                },
+                modifier = Modifier.fillMaxSize()
+            )
+
+            FocusAssistanceOverlay()
+
+            // Instruction overlays
+            when (currentSide) {
+                ScanSide.FRONT -> {
+                    FrontInstructionOverlay()
+                }
+                ScanSide.BACK -> {
+                    BackInstructionAnimation()
+                }
+            }
+
+            // Capture button
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                FilledTonalButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            val file = File.createTempFile(
+                                "id_${currentSide.name.lowercase()}",
+                                ".jpg",
+                                context.cacheDir
+                            )
+
+                            imageCaptureUseCase?.takePicture(
+                                ImageCapture.OutputFileOptions.Builder(file).build(),
+                                ContextCompat.getMainExecutor(context),
+                                object : ImageCapture.OnImageSavedCallback {
+                                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                                        when(currentSide) {
+                                            ScanSide.FRONT -> viewModel.setFrontImage(file)
+                                            ScanSide.BACK -> viewModel.setBackImage(file)
+                                        }
+
+                                        if(currentSide == ScanSide.FRONT) {
+                                            currentSide = ScanSide.BACK
+                                        } else {
+                                            viewModel.viewModelScope.launch {
+                                                try {
+                                                    viewModel.uploadImages()
+                                                    onScanComplete()
+                                                } catch (e: Exception) {
+                                                    viewModel.setError("Upload failed: ${e.message}")
                                                 }
                                             }
-
-                                            override fun onError(exc: ImageCaptureException) {
-                                                Log.e("IdScanner", "Failed to capture image", exc)
-                                            }
                                         }
-                                    )
+                                    }
+
+                                    override fun onError(exc: ImageCaptureException) {
+                                        viewModel.setError("Capture failed: ${exc.message}")
+                                    }
                                 }
-                            },
-                            modifier = Modifier
-                                .size(80.dp)
-                                .align(Alignment.Center),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
-                            )
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.photo_camera_24dp),
-                                contentDescription = "Capture ID",
-                                modifier = Modifier.size(24.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
-                    }
+                    },
+                    modifier = Modifier.size(80.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.photo_camera_24dp),
+                        contentDescription = "Capture ID",
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
         }
     }
 }
 
-// ViewModel for handling ID scanning logic and API calls
-class IdScannerViewModel : ViewModel() {
-    private val httpClient = HttpClient(Android) {
-        install(ContentNegotiation) {
-            json(Json {
-                prettyPrint = true
-                isLenient = true
-                ignoreUnknownKeys = true
-            })
+@Composable
+private fun FocusAssistanceOverlay() {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+        val canvasWidth = size.width
+        val canvasHeight = size.height
+        val targetWidth = canvasWidth * 0.85f
+        val targetHeight = targetWidth * 0.63f
+
+        // Create target area rect
+        val targetRect = androidx.compose.ui.geometry.Rect(
+            center.x - targetWidth / 2,
+            center.y - targetHeight / 2,
+            center.x + targetWidth / 2,
+            center.y + targetHeight / 2
+        )
+
+        // Create paths for overlay
+        val fullScreenPath = Path().apply {
+            addRect(androidx.compose.ui.geometry.Rect(0f, 0f, canvasWidth, canvasHeight))
         }
 
-        install(Logging) {
-            logger = Logger.DEFAULT
-            level = LogLevel.ALL
+        val targetAreaPath = Path().apply {
+            addRect(targetRect)
         }
-    }
 
-    //TODO: CHANGE TO GENERIC FROM CAMERAVIEWMODEL
-    @OptIn(InternalAPI::class)
-    suspend fun uploadIdImages(frontImage: File, backImage: File) {
-        try {
-            val multipartData = MultiPartFormDataContent(
-                formData {
-                    append("front_image", frontImage.readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=front.jpg")
-                    })
-                    append("back_image", backImage.readBytes(), Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=back.jpg")
-                    })
-                }
+        // Create combined path using difference operation
+        val finalPath = Path().apply {
+            op(fullScreenPath, targetAreaPath, PathOperation.Difference)
+        }
+
+        // Draw overlay
+        drawPath(finalPath, Color.Black.copy(alpha = 0.4f))
+
+        // Corner line properties
+        val cornerLength = 40.dp.toPx()
+        val strokeWidth = 4.dp.toPx()
+
+        // Draw corner brackets
+        listOf(
+            Triple(targetRect.left, targetRect.top, 1f to 1f),    // Top-left
+            Triple(targetRect.right, targetRect.top, -1f to 1f),  // Top-right
+            Triple(targetRect.left, targetRect.bottom, 1f to -1f),// Bottom-left
+            Triple(targetRect.right, targetRect.bottom, -1f to -1f) // Bottom-right
+        ).forEach { (x, y, direction) ->
+            // Horizontal line
+            drawLine(
+                color = Color.White,
+                start = Offset(x, y),
+                end = Offset(x + cornerLength * direction.first, y),
+                strokeWidth = strokeWidth
             )
-
-            httpClient.post("http://192.168.1.144:8000/extract-data") {
-                body = multipartData
-            }
-        } catch (e: Exception) {
-            Log.e("IdScannerViewModel", "Failed to upload images", e)
-            throw e
+            // Vertical line
+            drawLine(
+                color = Color.White,
+                start = Offset(x, y),
+                end = Offset(x, y + cornerLength * direction.second),
+                strokeWidth = strokeWidth
+            )
         }
     }
+}
+
+@Composable
+private fun FrontInstructionOverlay() {
+    var showInstructions by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        showInstructions = false
+    }
+
+    AnimatedVisibility(
+        visible = showInstructions,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Posicione a parte frontal do documento no quadro",
+                color = Color.White,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(24.dp)
+            )
+        }
+    }
+}
+
+
+
+@Composable
+private fun BackInstructionAnimation() {
+    var showInstructions by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        showInstructions = false
+    }
+
+    AnimatedVisibility(
+        visible = showInstructions,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.4f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Coloque o verso do documento no quadro",
+                color = Color.White,
+                fontSize = 24.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(24.dp)
+            )
+        }
+    }
+    /*
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.flip_animation))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        speed = 1.0f
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.4f)),
+        contentAlignment = Alignment.Center
+    ) {
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
+            modifier = Modifier
+                .size(300.dp)
+                .alpha(0.9f)
+        )
+    }
+    */
+}
+
+enum class ScanSide {
+    FRONT, BACK
 }
