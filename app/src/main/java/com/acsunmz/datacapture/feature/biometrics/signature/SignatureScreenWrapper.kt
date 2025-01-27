@@ -11,7 +11,7 @@ fun SignatureScreenWrapper(
     SignatureScreen(
         onSignatureSaved = { file ->
             viewModel.onSignatureSaved(file)
-            navController.navigate(Destinations.ChooserScreen)
+            navController.navigate(Destinations.SendCaptureDataScreen)
         }
     )
 }

@@ -206,10 +206,13 @@ fun SendCaptureDataScreen(
                 )
             }
 
-            FileStatusRow(label = "Photo", isFileExist = isPhotoExist)
+            FileStatusRow(label = "1.Scan do documento...", isFileExist = true)
             Spacer(modifier = Modifier.height(8.dp))
-            FileStatusRow(label = "Signature", isFileExist = isSignatureExist)
-
+            FileStatusRow(label = "2.Scan.....", isFileExist = true)
+            Spacer(modifier = Modifier.height(24.dp))
+            FileStatusRow(label = "3.Liveness...", isFileExist = true)
+            Spacer(modifier = Modifier.height(8.dp))
+            FileStatusRow(label = "4.Signature....", isFileExist = true)
             Spacer(modifier = Modifier.height(24.dp))
 
             Box(

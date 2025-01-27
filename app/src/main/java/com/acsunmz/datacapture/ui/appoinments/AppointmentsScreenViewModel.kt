@@ -51,7 +51,7 @@ class AppointmentsScreenViewModel(context: Context) : ViewModel() {
             try {
                 Log.d("AppointmentsViewModel", "Fetching appointments from API")
                 val request = Request.Builder()
-                    .url("http://192.168.1.209:8000/driver/appointments")
+                    .url("http://192.168.1.144:8000/driver/appointments")
                     .addHeader("Authorization", "Bearer $token")
                     .build()
 

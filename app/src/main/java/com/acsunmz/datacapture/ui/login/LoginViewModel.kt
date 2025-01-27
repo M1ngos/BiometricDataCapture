@@ -132,8 +132,7 @@ class LoginViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-
-                val response: HttpResponse = client.post("http://192.168.1.209:8000/auth/login") {
+                val response: HttpResponse = client.post("http://192.168.1.144:8000/auth/login") {
                     contentType(ContentType.Application.Json)
                     setBody(
                         LoginRequest(

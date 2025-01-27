@@ -107,7 +107,7 @@ fun AppNavHost(
         composable<Destinations.ConfirmScan> {
             ConfirmScan(
                 onProceed = {
-                    navController.popBackStack()
+                    navController.navigate(Destinations.DocumentScanner)
                 }
             )
         }
@@ -128,9 +128,8 @@ fun AppNavHost(
 
         composable<Destinations.DocumentScanner> {
             DocumentScanner(
-                navController = navController,
-                onDocumentScanned = { scannedUri ->
-                    navController.navigate(Destinations.SendCaptureDataScreen)
+                onDocumentScanned = {
+                    navController.navigate(Destinations.CameraScreen)
                 }
             )
         }
