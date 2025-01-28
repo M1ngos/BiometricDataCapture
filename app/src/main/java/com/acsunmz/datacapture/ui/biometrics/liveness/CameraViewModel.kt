@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.biometrics.camerax.capture
+package com.acsunmz.datacapture.ui.biometrics.liveness
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf

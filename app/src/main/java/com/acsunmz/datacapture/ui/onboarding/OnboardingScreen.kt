@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.acsunmz.datacapture.feature.onboarding
+package com.acsunmz.datacapture.ui.onboarding
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.core.presentation.navigation.Destinations
+import com.acsunmz.datacapture.core.navigation.Destinations
 import kotlinx.coroutines.launch
 
 

@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.biometrics.camerax.idscan
+package com.acsunmz.datacapture.ui.idscan
 
 import android.Manifest
 import android.content.Context

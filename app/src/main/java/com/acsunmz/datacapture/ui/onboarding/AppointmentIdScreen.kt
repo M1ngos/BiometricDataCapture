@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.onboarding
+package com.acsunmz.datacapture.ui.onboarding
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility

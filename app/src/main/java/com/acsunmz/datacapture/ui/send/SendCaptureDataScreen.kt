@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.screens
+package com.acsunmz.datacapture.ui.send
 
 import android.app.Activity
 import androidx.compose.foundation.layout.Arrangement

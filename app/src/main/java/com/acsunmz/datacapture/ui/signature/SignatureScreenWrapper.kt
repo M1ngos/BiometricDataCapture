@@ -1,7 +1,7 @@
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.acsunmz.datacapture.core.presentation.navigation.Destinations
+import com.acsunmz.datacapture.core.navigation.Destinations
 
 @Composable
 fun SignatureScreenWrapper(

@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.rounded.Cached
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -65,13 +64,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel
 import com.acsunmz.datacapture.ui.components.DatePickerFieldToModal
 import com.acsunmz.datacapture.ui.theme.LightBlueStatusBackground
 import com.acsunmz.datacapture.ui.theme.LightBlueStatusContent
 import com.acsunmz.datacapture.ui.theme.Shapes
-import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
-import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.Player

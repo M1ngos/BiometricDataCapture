@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.feature.docscanner
+package com.acsunmz.datacapture.ui.docscanner
 
 import android.app.Activity
 import android.app.Activity.RESULT_OK

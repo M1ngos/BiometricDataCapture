@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.navigation
+package com.acsunmz.datacapture.core.navigation
 
 import kotlinx.serialization.Serializable
 

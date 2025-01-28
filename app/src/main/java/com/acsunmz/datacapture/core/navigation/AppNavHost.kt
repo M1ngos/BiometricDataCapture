@@ -1,4 +1,4 @@
-package com.acsunmz.datacapture.core.presentation.navigation
+package com.acsunmz.datacapture.core.navigation
 
 import IdScanner
 import SignatureScreenWrapper
@@ -7,7 +7,6 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -15,20 +14,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.acsunmz.datacapture.MainActivity
 import com.acsunmz.datacapture.core.data.SessionManager
-import com.acsunmz.datacapture.core.presentation.screens.SendCaptureDataScreen
+import com.acsunmz.datacapture.ui.send.SendCaptureDataScreen
 import com.acsunmz.datacapture.ui.login.LoginScreen
 import com.acsunmz.datacapture.core.utils.getVideoUri
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraScreen
-import com.acsunmz.datacapture.feature.biometrics.camerax.LivenessDetectionScreen
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ConfirmScan
+import com.acsunmz.datacapture.ui.biometrics.liveness.CameraScreen
+import com.acsunmz.datacapture.ui.idscan.ConfirmScan
 import com.acsunmz.datacapture.ui.documents.ChooserScreen
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.DocumentType
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.ScannerScreen
-import com.acsunmz.datacapture.feature.docscanner.DocumentScanner
-import com.acsunmz.datacapture.feature.onboarding.AppointmentIdScreen
-import com.acsunmz.datacapture.feature.onboarding.OnboardingScreen
+import com.acsunmz.datacapture.ui.idscan.DocumentType
+import com.acsunmz.datacapture.ui.idscan.ScannerScreen
+import com.acsunmz.datacapture.ui.docscanner.DocumentScanner
+import com.acsunmz.datacapture.ui.onboarding.AppointmentIdScreen
+import com.acsunmz.datacapture.ui.onboarding.OnboardingScreen
 import com.acsunmz.datacapture.ui.appoinments.AppointmentsScreen
-import com.acsunmz.datacapture.ui.documents.IdConfirmationScreen
 import kotlin.system.exitProcess
 
 @RequiresApi(Build.VERSION_CODES.R)
@@ -112,13 +109,6 @@ fun AppNavHost(
             )
         }
 
-        composable<Destinations.LivenessDetectionScreen> {
-            LivenessDetectionScreen(
-                onLivenessComplete = {
-                    navController.navigate(Destinations.LivenessDetectionScreen)
-                }
-            )
-        }
 
         composable<Destinations.SignatureScreenWrapper> {
             SignatureScreenWrapper(

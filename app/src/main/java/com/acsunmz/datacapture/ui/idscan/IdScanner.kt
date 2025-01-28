@@ -70,7 +70,7 @@ import com.acsunmz.datacapture.core.model.CardSide
 import com.acsunmz.datacapture.core.model.IdData
 import com.acsunmz.datacapture.core.model.ScanState
 import com.acsunmz.datacapture.core.network.ScanSide
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.IdScanViewModel
+import com.acsunmz.datacapture.ui.idscan.IdScanViewModel
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants

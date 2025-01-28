@@ -1,14 +1,11 @@
-package com.acsunmz.datacapture.main
+package com.acsunmz.datacapture
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.acsunmz.datacapture.core.presentation.navigation.AppNavHost
+import com.acsunmz.datacapture.core.navigation.AppNavHost
 import androidx.navigation.NavHostController
 
 

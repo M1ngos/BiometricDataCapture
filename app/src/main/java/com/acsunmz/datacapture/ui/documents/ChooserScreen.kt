@@ -31,7 +31,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.acsunmz.datacapture.R
-import com.acsunmz.datacapture.feature.biometrics.camerax.idscan.DocumentType
+import com.acsunmz.datacapture.ui.idscan.DocumentType
 
 // ChooserScreen.kt
 @OptIn(ExperimentalMaterial3Api::class)
