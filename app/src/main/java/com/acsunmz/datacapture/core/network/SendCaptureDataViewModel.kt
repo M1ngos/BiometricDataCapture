@@ -4,8 +4,6 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel
-import com.acsunmz.datacapture.feature.biometrics.camerax.capture.CameraViewModel.UploadStatus
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -20,6 +18,9 @@ import org.json.JSONObject
 import java.io.File
 
 class SendCaptureDataViewModel : ViewModel() {
+
+    private val url = UrlProvider.SEND_CAPTURE_DATA_URL
+
     private val _uploadStatus = mutableStateOf<UploadStatus>(UploadStatus.Idle)
     var uploadStatus:UploadStatus
         get() = _uploadStatus.value
@@ -49,7 +50,7 @@ class SendCaptureDataViewModel : ViewModel() {
     suspend fun uploadCaptureData(imageFile: File, signatureFile: File) {
         try {
             val response = httpClient.submitFormWithBinaryData(
-                url = "http://192.168.1.144:8000/capture",
+                url = url,
                 formData = formData {
                     append("photo", imageFile.readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")

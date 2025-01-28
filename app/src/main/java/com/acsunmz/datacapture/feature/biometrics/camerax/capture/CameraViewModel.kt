@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.acsunmz.datacapture.core.network.UrlProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -18,6 +19,8 @@ import org.json.JSONObject
 import java.io.File
 
 class CameraViewModel : ViewModel() {
+    private val url = UrlProvider.UPLOAD_URL
+
     private val _uploadStatus = mutableStateOf<UploadStatus>(UploadStatus.Idle)
     var uploadStatus: UploadStatus
         get() = _uploadStatus.value
@@ -48,7 +51,7 @@ class CameraViewModel : ViewModel() {
         try {
             val response = httpClient.submitFormWithBinaryData(
 //                url = "https://your-fastapi-endpoint.com/upload",
-                url = "http://192.168.1.144:8000/upload",
+                url = url,
                 formData = formData {
                     append("file", imageFile.readBytes(), Headers.build {
                         append(HttpHeaders.ContentType, "image/jpeg")

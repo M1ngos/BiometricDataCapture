@@ -71,7 +71,7 @@ fun OnboardingScreen(
             }
         },
         onClickGetStarted = {
-            navController.navigate(Destinations.AppointmentIdScreen) {
+            navController.navigate(Destinations.LoginScreen) {
                 launchSingleTop = true
             }
         },

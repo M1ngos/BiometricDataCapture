@@ -36,7 +36,7 @@ fun ConfirmScan(
             // Driver Details Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color.Gray)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimaryContainer)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),

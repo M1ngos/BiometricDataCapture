@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.State
 import com.acsunmz.datacapture.core.model.Appointment
 import com.acsunmz.datacapture.core.model.AppointmentsResponse
+import com.acsunmz.datacapture.core.network.UrlProvider
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ class AppointmentsScreenViewModel(context: Context) : ViewModel() {
     private val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
     private val _appointments = mutableStateOf<List<Appointment>>(emptyList())
     val appointments: State<List<Appointment>> = _appointments
+    private val url = UrlProvider.APPOINTMENTS_URL
 
     private val gson = Gson()
     private val client = OkHttpClient()
@@ -51,7 +53,7 @@ class AppointmentsScreenViewModel(context: Context) : ViewModel() {
             try {
                 Log.d("AppointmentsViewModel", "Fetching appointments from API")
                 val request = Request.Builder()
-                    .url("http://192.168.1.144:8000/driver/appointments")
+                    .url(url)
                     .addHeader("Authorization", "Bearer $token")
                     .build()
 
