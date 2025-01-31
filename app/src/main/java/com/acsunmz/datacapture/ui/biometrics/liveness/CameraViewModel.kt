@@ -19,7 +19,7 @@ import org.json.JSONObject
 import java.io.File
 
 class CameraViewModel : ViewModel() {
-    private val url = UrlProvider.UPLOAD_URL
+    private val url = UrlProvider.UPLOAD_LIVE_URL
 
     private val _uploadStatus = mutableStateOf<UploadStatus>(UploadStatus.Idle)
     var uploadStatus: UploadStatus
