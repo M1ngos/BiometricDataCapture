@@ -47,11 +47,17 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -89,6 +95,10 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.unit.dp
+import com.acsunmz.datacapture.ui.biometrics.liveness.CameraViewModel
+import com.acsunmz.datacapture.ui.biometrics.liveness.DisplayStatus
+import com.acsunmz.datacapture.ui.theme.YellowStatusBackground
+import com.acsunmz.datacapture.ui.theme.YellowStatusContent
 
 @OptIn(ExperimentalGetImage::class)
 @SuppressLint("StateFlowValueCalledInComposition")
@@ -100,8 +110,8 @@ fun IdScanner(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
-    var currentSide by remember { mutableStateOf(ScanSide.FRONT) }
-
+    val currentSide by viewModel.currentSide.collectAsState()
+    var disableTrigger by remember { mutableStateOf(false) }
     // Camera setup
     var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
     var imageCaptureUseCase by remember { mutableStateOf<ImageCapture?>(null) }
@@ -122,6 +132,14 @@ fun IdScanner(
 
     LaunchedEffect(Unit) {
         permissionLauncher.launch(Manifest.permission.CAMERA)
+    }
+
+    LaunchedEffect(viewModel.shouldNavigate) {
+        if (viewModel.shouldNavigate) {
+            onScanComplete()
+            // Reset the navigation flag
+            viewModel.shouldNavigate = false
+        }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -172,6 +190,15 @@ fun IdScanner(
                 }
             }
 
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(16.dp)
+            ) {
+                DisplayStatus(viewModel)
+            }
+
             // Capture button
             Box(
                 modifier = Modifier
@@ -195,25 +222,28 @@ fun IdScanner(
                                     override fun onImageSaved(output: ImageCapture.OutputFileResults) {
                                         when(currentSide) {
                                             ScanSide.FRONT -> viewModel.setFrontImage(file)
-                                            ScanSide.BACK -> viewModel.setBackImage(file)
+                                            ScanSide.BACK -> {
+                                                viewModel.setBackImage(file)
+//                                                disableTrigger = true
+                                            }
                                         }
 
                                         if(currentSide == ScanSide.FRONT) {
-                                            currentSide = ScanSide.BACK
+                                            viewModel.setCurrentSide(ScanSide.BACK)
                                         } else {
                                             viewModel.viewModelScope.launch {
                                                 try {
                                                     viewModel.uploadImages()
-                                                    onScanComplete()
+//                                                    onScanComplete()
                                                 } catch (e: Exception) {
-                                                    viewModel.setError("Upload failed: ${e.message}")
+//                                                    viewModel.setError("Upload failed: ${e.message}")
                                                 }
                                             }
                                         }
                                     }
 
                                     override fun onError(exc: ImageCaptureException) {
-                                        viewModel.setError("Capture failed: ${exc.message}")
+//                                        viewModel.setError("Capture failed: ${exc.message}")
                                     }
                                 }
                             )
@@ -221,6 +251,7 @@ fun IdScanner(
                     },
                     modifier = Modifier.size(80.dp),
                     shape = CircleShape,
+//                    enabled = !disableTrigger,
                     colors = ButtonDefaults.filledTonalButtonColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
@@ -233,6 +264,137 @@ fun IdScanner(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun DisplayStatus(viewModel: IdScanViewModel) {
+    // Status area at the top
+    when (val status = viewModel.idUploadStatus) {
+        is IdScanViewModel.IdUploadStatus.Uploading -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        "Processing...",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                }
+            }
+        }
+
+        is IdScanViewModel.IdUploadStatus.Success -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.CheckCircle,
+                        contentDescription = "Success",
+                        tint = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        status.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+                }
+            }
+        }
+
+        is IdScanViewModel.IdUploadStatus.Error -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.error_24dp),
+                        contentDescription = "Error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        status.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                }
+            }
+        }
+
+        is IdScanViewModel.IdUploadStatus.FaceExtractionFailed -> {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = YellowStatusBackground.copy(alpha = 0.9f)
+                )
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        contentDescription = "Warning",
+                        tint = YellowStatusContent
+                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        status.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = YellowStatusContent
+                    )
+                }
+            }
+        }
+
+        else -> {} // Idle state
     }
 }
 

@@ -1,17 +1,22 @@
 package com.acsunmz.datacapture.ui.idscan
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.acsunmz.datacapture.core.data.SessionManager
 import com.acsunmz.datacapture.core.model.Driver
 import kotlinx.serialization.json.Json
@@ -21,10 +26,11 @@ import java.util.*
 @Composable
 fun ConfirmScan(
     onProceed: () -> Unit,
-    documentData: Driver? = null
-) {
+    viewModel: IdScanViewModel = viewModel(),
+    ) {
     val context = LocalContext.current
     val driver = SessionManager.getDriver()
+    val documentData :IdCardData? = null
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -77,8 +83,13 @@ fun ConfirmScan(
                         fontWeight = FontWeight.Bold
                     )
                     documentData?.let {
-                        DriverInfoItem("Nome", it.name)
-                        DriverInfoItem("Número da Carta", it.licenceNumber)
+                        DriverInfoItem("Nome", it.fullName)
+                        DriverInfoItem("Número da Carta", it.idNumber)
+                        DriverInfoItem("Data de Nascimento", it.dateOfBirth)
+                        DriverInfoItem("Altura", it.height)
+                        DriverInfoItem("Sexo", it.sex)
+                        DriverInfoItem("Local de Nascimento", it.birthPlace)
+                        DriverInfoItem("Endereço", it.address)
                         // Add other document fields as needed
                     } ?: Text("No document data available")
                 }
