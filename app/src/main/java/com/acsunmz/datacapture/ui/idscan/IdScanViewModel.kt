@@ -128,9 +128,9 @@ class IdScanViewModel : ViewModel() {
                     birthPlace = frontData.optString("birth_place", "N/A"),
                     address = frontData.optString("address", "N/A")
                 )
-
                 Log.d("IdUpload", "value: ${_idCardData.value}")
 
+                _idCardData.value?.let { SessionManager.saveIdCardData(it) }
 
                 idUploadStatus = IdUploadStatus.Success("ID card processed successfully")
                 viewModelScope.launch {

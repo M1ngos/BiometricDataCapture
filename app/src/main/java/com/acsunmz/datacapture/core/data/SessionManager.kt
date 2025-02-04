@@ -3,12 +3,14 @@ package com.acsunmz.datacapture.core.data
 import android.content.Context
 import android.content.SharedPreferences
 import com.acsunmz.datacapture.core.model.Driver
+import com.acsunmz.datacapture.ui.idscan.IdCardData
 import com.google.gson.Gson
 
 object SessionManager {
 
     private const val PREF_NAME = "app_session"
     private const val KEY_DRIVER = "driver"
+    private const val KEY_ID_CARD_DATA = "id_card_data"
 
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var editor: SharedPreferences.Editor
@@ -34,10 +36,26 @@ object SessionManager {
         }
     }
 
+    // Save ID Card Data
+    fun saveIdCardData(idCardData: IdCardData) {
+        val idCardJson = Gson().toJson(idCardData)
+        editor.putString(KEY_ID_CARD_DATA, idCardJson).apply()
+    }
+
+    // Get ID Card Data
+    fun getIdCardData(): IdCardData? {
+        val idCardJson = sharedPreferences.getString(KEY_ID_CARD_DATA, null)
+        return if (idCardJson != null) {
+            Gson().fromJson(idCardJson, IdCardData::class.java)
+        } else {
+            null
+        }
+    }
+
     // Clear session
     fun clearSession() {
         editor.remove(KEY_DRIVER).apply()
-        editor.remove(PREF_NAME).apply()
+        editor.remove(KEY_ID_CARD_DATA).apply()
     }
 }
 

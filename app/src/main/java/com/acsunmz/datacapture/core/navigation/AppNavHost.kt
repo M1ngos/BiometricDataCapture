@@ -38,7 +38,7 @@ fun AppNavHost(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Destinations.IdScanner
+        startDestination = Destinations.Onboarding
     ) {
         composable<Destinations.Onboarding> {
             OnboardingScreen(

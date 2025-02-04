@@ -12,7 +12,7 @@
 //        SessionManager.initialize(context) // Ensure it's initialized
 //        SessionManager.getIdCardData()
 //    }
-//
+////
 //    Log.d("IdUpload", "value in confirmScan: $idCardData")
 //
 //    Box(modifier = Modifier.fillMaxSize()) {
@@ -55,7 +55,7 @@
 //}
 //
 //
-//// After parsing the JSON and before navigation
+// After parsing the JSON and before navigation
 //_idCardData.value = IdCardData(
 //documentType = frontData.optString("document_type", "Unknown"),
 //idNumber = frontData.optString("id_number", "N/A"),
@@ -69,7 +69,7 @@
 //
 //Log.d("IdUpload", "value: ${_idCardData.value}")
 //
-//// Save it in shared preferences
+// Save it in shared preferences
 //_idCardData.value?.let { SessionManager.saveIdCardData(it) }
 //
 //idUploadStatus = IdUploadStatus.Success("ID card processed successfully")

@@ -32,6 +32,14 @@ fun ConfirmScan(
     val driver = SessionManager.getDriver()
     val documentData :IdCardData? = null
 
+    // Retrieve the saved ID card data from shared preferences
+    val idCardData = remember {
+        SessionManager.initialize(context) // Ensure it's initialized
+        SessionManager.getIdCardData()
+    }
+
+    Log.d("IdUpload", "value in confirmScan: $idCardData")
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -42,7 +50,8 @@ fun ConfirmScan(
             // Driver Details Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimaryContainer)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -82,7 +91,7 @@ fun ConfirmScan(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
-                    documentData?.let {
+                    idCardData?.let {
                         DriverInfoItem("Nome", it.fullName)
                         DriverInfoItem("Número da Carta", it.idNumber)
                         DriverInfoItem("Data de Nascimento", it.dateOfBirth)
@@ -90,7 +99,6 @@ fun ConfirmScan(
                         DriverInfoItem("Sexo", it.sex)
                         DriverInfoItem("Local de Nascimento", it.birthPlace)
                         DriverInfoItem("Endereço", it.address)
-                        // Add other document fields as needed
                     } ?: Text("No document data available")
                 }
             }
