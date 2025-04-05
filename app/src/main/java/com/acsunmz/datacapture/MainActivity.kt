@@ -1,5 +1,7 @@
 package com.acsunmz.datacapture
 
+import android.content.ComponentName
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -18,10 +20,10 @@ import org.opencv.android.OpenCVLoader
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (!OpenCVLoader.initDebug())
-            Log.e("OpenCV", "Unable to load OpenCV!");
-        else
-            Log.d("OpenCV", "OpenCV loaded Successfully!");
+//        if (!OpenCVLoader.initDebug())
+//            Log.e("OpenCV", "Unable to load OpenCV!");
+//        else
+//            Log.d("OpenCV", "OpenCV loaded Successfully!");
         SessionManager.initialize(this)
         enableEdgeToEdge()
         setContent {

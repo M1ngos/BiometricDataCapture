@@ -2,11 +2,20 @@ package com.acsunmz.datacapture.core.navigation
 
 import IdScanner
 import SignatureScreenWrapper
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -14,9 +23,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.acsunmz.datacapture.MainActivity
 import com.acsunmz.datacapture.core.data.SessionManager
+import com.acsunmz.datacapture.core.utils.convert
 import com.acsunmz.datacapture.ui.send.SendCaptureDataScreen
 import com.acsunmz.datacapture.ui.login.LoginScreen
 import com.acsunmz.datacapture.core.utils.getVideoUri
+import com.acsunmz.datacapture.core.utils.loadImageFromUri
 import com.acsunmz.datacapture.ui.biometrics.liveness.CameraScreen
 import com.acsunmz.datacapture.ui.idscan.ConfirmScan
 import com.acsunmz.datacapture.ui.documents.ChooserScreen
@@ -35,6 +46,37 @@ fun AppNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    val front = remember { mutableStateOf<Bitmap?>(null) }
+    val back = remember { mutableStateOf<Bitmap?>(null) }
+    val liveness = remember { mutableStateOf<Bitmap?>(null) }
+    val portrait = remember { mutableStateOf<Bitmap?>(null) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val data = result.data
+            if (data != null) {
+                val document = data.getParcelableExtra<Uri>("subscriber_data")
+                val frontURI = data.getParcelableExtra<Uri>("document_front_uri")
+                val backURI = data.getParcelableExtra<Uri>("document_back_uri")
+                val selfieURI = data.getParcelableExtra<Uri>("document_selfie_uri")
+                val portraitURI = data.getParcelableExtra<Uri>("portrait_uri")
+
+                val documentObject = convert(document!!, context)
+                front.value = loadImageFromUri(context, frontURI)
+                back.value = loadImageFromUri(context, backURI)
+                liveness.value = loadImageFromUri(context, selfieURI)
+                portrait.value = loadImageFromUri(context, portraitURI)
+
+                Log.d("Dados_Extraidos", " Dados : $documentObject")
+            }
+        }
+    }
+
+
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -129,7 +171,9 @@ fun AppNavHost(
                 navController = navController,
                 onDocumentTypeSelected = { documentType ->
 //                    navController.navigate("${Destinations.ScannerScreen}/${documentType.title}")
-                    navController.navigate(Destinations.IdScanner)
+//                    navController.navigate(Destinations.IdScanner)
+                    val intent = Intent("com.tablutech.modi.REGISTER")
+                    launcher.launch(intent)
                 },
                 onBackPress = {}
             )
